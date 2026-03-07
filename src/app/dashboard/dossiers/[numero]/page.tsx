@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil, X, Check, GraduationCap } from "lucide-react";
+import { Pencil, X, Check, GraduationCap, FileDown, Download, Paperclip, Trash2 } from "lucide-react";
+import { generateDossierPdf } from "@/lib/generate-dossier-pdf";
+import QrDossier from "@/components/QrDossier";
+import PhotoCapture from "@/components/PhotoCapture";
+import EmpreintesSimulation from "@/components/EmpreintesSimulation";
 
 interface FormationItem {
   id: string;
@@ -15,12 +19,20 @@ interface FormationItem {
   observation: string | null;
 }
 
+interface PieceJointeItem {
+  id: string;
+  titre: string;
+  fileName: string | null;
+  fileType: string | null;
+  createdAt?: string;
+}
+
 type Categorie = "civil" | "policier" | "militaire";
 type EtatCivil = "marie" | "celibataire" | "veuf";
 type StatusDetenu = "prevenu" | "detenu" | "autre";
 
+/** Réponse API par numéro : pas d’id exposé. */
 interface DossierDetail {
-  id: string;
   numeroDossier: string;
   dateEntree: string;
   juridictionId: string | null;
@@ -31,7 +43,6 @@ interface DossierDetail {
   prevention: string;
   observation: string | null;
   detenu: {
-    id: string;
     categorie?: Categorie;
     nom: string;
     prenom: string;
@@ -47,13 +58,15 @@ interface DossierDetail {
     detachement?: string | null;
     etatCivil?: EtatCivil | null;
     status?: StatusDetenu | null;
+    photoUrl?: string | null;
+    empreintes?: string | null;
   } | null;
 }
 
 export default function DossierDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
+  const numero = (params.numero as string)?.trim();
   const [data, setData] = useState<DossierDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -70,9 +83,35 @@ export default function DossierDetailPage() {
   const [formationObservation, setFormationObservation] = useState("");
   const [formationSubmitting, setFormationSubmitting] = useState(false);
   const [formationError, setFormationError] = useState("");
+  const [pieceJointesList, setPieceJointesList] = useState<PieceJointeItem[]>([]);
+  const [pieceJointesLoading, setPieceJointesLoading] = useState(false);
+  const [pieceJointeTitre, setPieceJointeTitre] = useState("");
+  const [pieceJointeFile, setPieceJointeFile] = useState<File | null>(null);
+  const [pieceJointeSubmitting, setPieceJointeSubmitting] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [photoSaving, setPhotoSaving] = useState(false);
+  const [empreintesSaving, setEmpreintesSaving] = useState(false);
+  const [pdfStats, setPdfStats] = useState<{ total: number; items: { date: string; time: string; downloadedBy: string | null }[] }>({ total: 0, items: [] });
+  const [showPdfDownloadsModal, setShowPdfDownloadsModal] = useState(false);
+
+  const apiNumero = numero ? encodeURIComponent(numero) : "";
+
+  function fetchPdfStats() {
+    if (!apiNumero) return;
+    fetch(`/api/dossiers/numero/${apiNumero}/pdf-downloads`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : { total: 0, items: [] }))
+      .then((d: { total?: number; items?: { date: string; time: string; downloadedBy: string | null }[] }) =>
+        setPdfStats({ total: d.total ?? 0, items: d.items ?? [] })
+      )
+      .catch(() => setPdfStats({ total: 0, items: [] }));
+  }
 
   useEffect(() => {
-    fetch(`/api/dossiers/${id}`, { credentials: "include" })
+    if (!apiNumero) {
+      setLoading(false);
+      return;
+    }
+    fetch(`/api/dossiers/numero/${apiNumero}`, { credentials: "include" })
       .then((res) => {
         if (res.status === 401) router.replace("/login");
         if (!res.ok) throw new Error("Not found");
@@ -105,24 +144,137 @@ export default function DossierDetailPage() {
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [id, router]);
+  }, [apiNumero, router]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!apiNumero) return;
     setFormationsLoading(true);
-    fetch(`/api/dossiers/${id}/formations`, { credentials: "include" })
+    fetch(`/api/dossiers/numero/${apiNumero}/formations`, { credentials: "include" })
       .then((res) => (res.ok ? res.json() : []))
       .then(setFormationsList)
       .catch(() => setFormationsList([]))
       .finally(() => setFormationsLoading(false));
-  }, [id]);
+  }, [apiNumero]);
+
+  useEffect(() => {
+    if (!apiNumero) return;
+    setPieceJointesLoading(true);
+    fetch(`/api/dossiers/numero/${apiNumero}/piece-jointes`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setPieceJointesList)
+      .catch(() => setPieceJointesList([]))
+      .finally(() => setPieceJointesLoading(false));
+  }, [apiNumero]);
+
+  useEffect(() => {
+    if (!apiNumero) return;
+    fetchPdfStats();
+  }, [apiNumero]);
+
+  function savePhoto(dataUrl: string) {
+    setPendingPhoto(dataUrl);
+  }
+
+  function persistPhoto() {
+    if (!pendingPhoto || !apiNumero) return;
+    setPhotoSaving(true);
+    fetch(`/api/dossiers/numero/${apiNumero}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ photoUrl: pendingPhoto }),
+    })
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error("Erreur")))
+      .then(() => {
+        setData((d) => (d?.detenu ? { ...d, detenu: { ...d.detenu, photoUrl: pendingPhoto } } : d));
+        setPendingPhoto(null);
+        toast.success("Photo enregistrée");
+      })
+      .catch(() => toast.error("Erreur enregistrement photo"))
+      .finally(() => setPhotoSaving(false));
+  }
+
+  function persistEmpreintes(json: string) {
+    if (!apiNumero) return;
+    setEmpreintesSaving(true);
+    fetch(`/api/dossiers/numero/${apiNumero}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ empreintes: json }),
+    })
+      .then((res) => res.ok ? res.json() : Promise.reject(new Error("Erreur")))
+      .then(() => {
+        setData((d) => (d?.detenu ? { ...d, detenu: { ...d.detenu, empreintes: json } } : d));
+        toast.success("Empreintes enregistrées");
+      })
+      .catch(() => toast.error("Erreur enregistrement empreintes"))
+      .finally(() => setEmpreintesSaving(false));
+  }
+
+  async function addPieceJointe(e: React.FormEvent) {
+    e.preventDefault();
+    const titre = pieceJointeTitre.trim();
+    if (!titre) {
+      toast.error("Le titre du document est requis");
+      return;
+    }
+    setPieceJointeSubmitting(true);
+    try {
+      let fileBase64: string | null = null;
+      let fileName: string | null = null;
+      let fileType: string | null = null;
+      if (pieceJointeFile && pieceJointeFile.size > 0 && pieceJointeFile.size <= 4 * 1024 * 1024) {
+        fileBase64 = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve((r.result as string).split(",")[1] ?? "");
+          r.onerror = reject;
+          r.readAsDataURL(pieceJointeFile!);
+        });
+        fileName = pieceJointeFile.name;
+        fileType = pieceJointeFile.type;
+      }
+      const res = await fetch(`/api/dossiers/numero/${apiNumero}/piece-jointes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ titre, fileName, fileType, fileBase64 }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Erreur");
+        return;
+      }
+      setPieceJointesList((prev) => [...prev, { id: json.id, titre: json.titre, fileName: json.fileName ?? null, fileType: null }]);
+      setPieceJointeTitre("");
+      setPieceJointeFile(null);
+      const fileInput = document.querySelector<HTMLInputElement>('input[type="file"][accept*=".pdf"]');
+      if (fileInput) fileInput.value = "";
+      toast.success("Document ajouté");
+    } catch {
+      toast.error("Erreur lors de l'ajout");
+    } finally {
+      setPieceJointeSubmitting(false);
+    }
+  }
+
+  function deletePieceJointe(id: string) {
+    if (!confirm("Supprimer ce document de la liste ?")) return;
+    fetch(`/api/dossiers/numero/${apiNumero}/piece-jointes/${id}`, { method: "DELETE", credentials: "include" })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        setPieceJointesList((prev) => prev.filter((p) => p.id !== id));
+        toast.success("Document supprimé");
+      })
+      .catch(() => toast.error("Erreur"));
+  }
 
   async function addFormation(e: React.FormEvent) {
     e.preventDefault();
     setFormationError("");
     setFormationSubmitting(true);
     try {
-      const res = await fetch(`/api/dossiers/${id}/formations`, {
+      const res = await fetch(`/api/dossiers/numero/${apiNumero}/formations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -161,7 +313,7 @@ export default function DossierDetailPage() {
     setError("");
     setSaving(true);
     try {
-      const res = await fetch(`/api/dossiers/${id}`, {
+      const res = await fetch(`/api/dossiers/numero/${apiNumero}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -247,7 +399,7 @@ export default function DossierDetailPage() {
     );
   }
 
-  if (!data) {
+  if (!numero || !data) {
     return (
       <div className="max-w-5xl w-full">
         <p className="text-zinc-400 text-sm">Dossier introuvable.</p>
@@ -265,86 +417,179 @@ export default function DossierDetailPage() {
 
   return (
     <div className="max-w-5xl w-full animate-fade-in">
-      {/* Header + résumé compact */}
-      <header className="mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-white tracking-tight">
-              Dossier {data.numeroDossier}
-            </h1>
-            <p className="text-zinc-400 mt-0.5 text-sm">
-              {d ? `${d.nom} ${d.prenom}` : "—"}
-            </p>
-          </div>
-          {!editing ? (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              Modifier
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-white hover:bg-primary-dim disabled:opacity-50"
-              >
-                <Check className="h-3.5 w-3.5" />
-                {saving ? "Enregistrement…" : "Enregistrer"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(false);
-                  setForm({
-                    numeroDossier: data.numeroDossier,
-                    dateEntree: data.dateEntree,
-                    juridictionBasParquet: data.juridictionBasParquet ?? "",
-                    prevention: data.prevention,
-                    observation: data.observation ?? "",
-                    detenu: data.detenu
-                      ? {
-                          ...data.detenu,
-                          poste: data.detenu.poste ?? "",
-                          lieuNaissance: data.detenu.lieuNaissance ?? "",
-                          dateNaissance: data.detenu.dateNaissance ?? "",
-                          nationalite: data.detenu.nationalite ?? "",
-                          adresse: data.detenu.adresse ?? "",
-                          matricule: data.detenu.matricule ?? "",
-                          grade: data.detenu.grade ?? "",
-                          fonction: data.detenu.fonction ?? "",
-                          unite: data.detenu.unite ?? "",
-                          detachement: data.detenu.detachement ?? "",
-                        }
-                      : null,
-                  });
-                }}
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5"
-              >
-                <X className="h-3.5 w-3.5" />
-                Annuler
-              </button>
+      {/* En-tête : ligne 1 = titre + actions, ligne 2 = N° | Entrée | Juridiction OU Parquet | PDF */}
+      <header className="mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5">
+          <div className="min-w-0 flex-1 flex items-center gap-4">
+            {d?.photoUrl && (
+              <div className="shrink-0 rounded-lg border border-white/10 overflow-hidden bg-white/5 w-14 h-14">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={d.photoUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h1 className="text-lg font-semibold text-white tracking-tight truncate">
+                  Dossier <span className="font-mono text-primary">{data.numeroDossier}</span>
+                </h1>
+                {d?.status && (
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-zinc-400 uppercase tracking-wider capitalize">
+                    {d.status}
+                  </span>
+                )}
+              </div>
+              <p className="text-zinc-400 mt-0.5 text-sm truncate">
+                {d ? `${d.nom} ${d.prenom}` : "—"}
+              </p>
             </div>
-          )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <QrDossier numero={data.numeroDossier} compact />
+            <a
+              href={`/scan/${encodeURIComponent(data.numeroDossier)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+            >
+              Scan
+            </a>
+            {!editing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    toast.loading("Génération du PDF…", { id: "pdf" });
+                    try {
+                      await fetch(`/api/dossiers/numero/${apiNumero}/pdf-downloads`, { method: "POST", credentials: "include" });
+                      await generateDossierPdf(
+                        {
+                          numeroDossier: data.numeroDossier,
+                          dateEntree: data.dateEntree,
+                          juridictionNom: data.juridictionNom,
+                          parquetNom: data.parquetNom,
+                          juridictionBasParquet: data.juridictionBasParquet,
+                          prevention: data.prevention,
+                          observation: data.observation ?? null,
+                          detenu: data.detenu ? { nom: data.detenu.nom, prenom: data.detenu.prenom, poste: data.detenu.poste ?? null, lieuNaissance: data.detenu.lieuNaissance ?? null, dateNaissance: data.detenu.dateNaissance ?? null, nationalite: data.detenu.nationalite ?? null, adresse: data.detenu.adresse ?? null, categorie: data.detenu.categorie } : null,
+                          photoUrl: data.detenu?.photoUrl ?? null,
+                          pieceJointes: pieceJointesList.map((p) => ({ titre: p.titre })),
+                        },
+                        { baseUrl: typeof window !== "undefined" ? window.location.origin : "" }
+                      );
+                      fetchPdfStats();
+                      toast.success("PDF téléchargé", { id: "pdf" });
+                    } catch {
+                      toast.error("Erreur lors de la génération du PDF", { id: "pdf" });
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                >
+                  <FileDown className="h-3.5 w-3.5" />
+                  PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Modifier
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-white hover:bg-primary-dim disabled:opacity-50 transition"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  {saving ? "…" : "Enregistrer"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(false);
+                    setForm({
+                      numeroDossier: data.numeroDossier,
+                      dateEntree: data.dateEntree,
+                      juridictionBasParquet: data.juridictionBasParquet ?? "",
+                      prevention: data.prevention,
+                      observation: data.observation ?? "",
+                      detenu: data.detenu
+                        ? {
+                            ...data.detenu,
+                            poste: data.detenu.poste ?? "",
+                            lieuNaissance: data.detenu.lieuNaissance ?? "",
+                            dateNaissance: data.detenu.dateNaissance ?? "",
+                            nationalite: data.detenu.nationalite ?? "",
+                            adresse: data.detenu.adresse ?? "",
+                            matricule: data.detenu.matricule ?? "",
+                            grade: data.detenu.grade ?? "",
+                            fonction: data.detenu.fonction ?? "",
+                            unite: data.detenu.unite ?? "",
+                            detachement: data.detenu.detachement ?? "",
+                          }
+                        : null,
+                    });
+                  }}
+                  disabled={saving}
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Annuler
+                </button>
+              </>
+            )}
+          </div>
         </div>
-        {/* Bandeau résumé */}
-        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 rounded-lg bg-white/[0.04] border border-white/[0.06] px-4 py-3 text-sm">
-          <span className="text-zinc-500">N° dossier</span>
-          <span className="text-white font-mono">{data.numeroDossier}</span>
-          <span className="text-zinc-600">·</span>
-          <span className="text-zinc-500">Entrée</span>
-          <span className="text-white">{data.dateEntree}</span>
-          <span className="text-zinc-600">·</span>
-          <span className="text-zinc-500">Juridiction</span>
-          <span className="text-white">{data.juridictionNom ? `${data.juridictionNom} près` : "—"}</span>
-          <span className="text-zinc-600">·</span>
-          <span className="text-zinc-500">Parquet</span>
-          <span className="text-white">{data.parquetNom ? `${data.parquetNom} près` : "—"}</span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 text-[13px]">
+          <span className="flex items-center gap-1.5">
+            <span className="text-zinc-500">N°</span>
+            <span className="font-mono font-medium text-white">{data.numeroDossier}</span>
+          </span>
+          <span className="text-zinc-600">|</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-zinc-500">Entrée</span>
+            <span className="text-white">{data.dateEntree}</span>
+          </span>
+          <span className="text-zinc-600">|</span>
+          <span className="flex items-center gap-1.5">
+            {data.juridictionNom ? (
+              <>
+                <span className="text-zinc-500">Juridiction</span>
+                <span className="text-white">{data.juridictionNom} près</span>
+              </>
+            ) : data.parquetNom ? (
+              <>
+                <span className="text-zinc-500">Parquet</span>
+                <span className="text-white">{data.parquetNom} près</span>
+              </>
+            ) : (
+              <span className="text-zinc-500">—</span>
+            )}
+          </span>
+          {pdfStats.total > 0 && (
+            <>
+              <span className="text-zinc-600">|</span>
+              <button
+                type="button"
+                onClick={() => setShowPdfDownloadsModal(true)}
+                className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -m-1 hover:bg-white/5 transition text-left"
+                title="Voir tous les détails des téléchargements"
+              >
+                <Download className="h-3.5 w-3.5 text-zinc-500" />
+                <span className="text-zinc-500">PDF :</span>
+                <span className="text-white font-medium">{pdfStats.total} téléchargement{pdfStats.total > 1 ? "s" : ""}</span>
+                {pdfStats.items[0] && (
+                  <span className="text-zinc-500 text-[11px]">
+                    (dernier {pdfStats.items[0].date} {pdfStats.items[0].time})
+                  </span>
+                )}
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -354,10 +599,68 @@ export default function DossierDetailPage() {
         </div>
       )}
 
+      {showPdfDownloadsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowPdfDownloadsModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pdf-downloads-title"
+        >
+          <div
+            className="rounded-2xl border border-white/[0.1] bg-zinc-900 shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/[0.08]">
+              <h2 id="pdf-downloads-title" className="text-base font-semibold text-white flex items-center gap-2">
+                <Download className="h-5 w-5 text-primary" />
+                Historique des téléchargements PDF
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowPdfDownloadsModal(false)}
+                className="p-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white transition"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-5">
+              <p className="text-[13px] text-zinc-400 mb-4">
+                {pdfStats.total} téléchargement{pdfStats.total > 1 ? "s" : ""} enregistré{pdfStats.total > 1 ? "s" : ""} pour ce dossier.
+              </p>
+              {pdfStats.items.length === 0 ? (
+                <p className="text-zinc-500 text-sm">Aucun détail disponible.</p>
+              ) : (
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-white/[0.08]">
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">#</th>
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Date</th>
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Heure</th>
+                      <th className="pb-2.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Téléchargé par</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pdfStats.items.map((item, index) => (
+                      <tr key={index} className="border-b border-white/[0.05] last:border-0">
+                        <td className="py-2.5 pr-3 text-zinc-500 tabular-nums">{index + 1}</td>
+                        <td className="py-2.5 pr-3 text-white">{item.date ?? "—"}</td>
+                        <td className="py-2.5 pr-3 text-white">{item.time ?? "—"}</td>
+                        <td className="py-2.5 text-zinc-300">{item.downloadedBy ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Identité */}
-        <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
-          <h2 className="text-[13px] font-semibold text-white mb-3">Identité du détenu</h2>
+        <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+          <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Identité</h2>
           {editing && form.detenu ? (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -443,10 +746,9 @@ export default function DossierDetailPage() {
           )}
         </section>
 
-        {/* Colonne droite : Dossier + Prévention */}
         <div className="space-y-4">
-          <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
-            <h2 className="text-[13px] font-semibold text-white mb-3">Dossier</h2>
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+            <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Dossier</h2>
             {editing ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -466,8 +768,8 @@ export default function DossierDetailPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
-            <h2 className="text-[13px] font-semibold text-white mb-3">Prévention et observation</h2>
+          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+            <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Prévention et observation</h2>
             {editing ? (
               <div className="space-y-3">
                 <div><label className={labelClass}>Prévention</label><textarea value={form.prevention ?? ""} onChange={(e) => setForm((f) => ({ ...f, prevention: e.target.value }))} rows={2} className={`${inputClass} resize-none`} /></div>
@@ -483,9 +785,26 @@ export default function DossierDetailPage() {
         </div>
       </div>
 
-      {/* Formations — pleine largeur */}
-      <section className="mt-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
-        <h2 className="flex items-center gap-2 text-[13px] font-semibold text-white mb-3">
+      <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {data.detenu && (
+          <>
+            <PhotoCapture
+              currentPhotoUrl={data.detenu.photoUrl ?? null}
+              onCapture={savePhoto}
+              onSave={persistPhoto}
+              saving={photoSaving}
+            />
+            <EmpreintesSimulation
+              currentJson={data.detenu.empreintes ?? null}
+              onSave={persistEmpreintes}
+              saving={empreintesSaving}
+            />
+          </>
+        )}
+      </div>
+
+      <section className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">
           <GraduationCap className="h-4 w-4 text-primary" />
           Formations
         </h2>
@@ -534,6 +853,58 @@ export default function DossierDetailPage() {
                   </span>
                 )}
                 {f.observation && <span className="w-full text-zinc-500 text-xs mt-0.5 block">{f.observation}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
+        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">
+          <Paperclip className="h-4 w-4 text-primary" />
+          Pièces jointes
+        </h2>
+        <p className="text-[12px] text-zinc-500 mb-4">
+          Documents dressés par le parquet ou la cour pour le prévenu/détenu. Le titre apparaît dans le PDF généré.
+        </p>
+        <form onSubmit={addPieceJointe} className="flex flex-wrap items-end gap-3 mb-4">
+          <div className="min-w-[200px] flex-1">
+            <label className={labelClass}>Titre du document *</label>
+            <input
+              type="text"
+              value={pieceJointeTitre}
+              onChange={(e) => setPieceJointeTitre(e.target.value)}
+              required
+              placeholder="Ex. Ordonnance de placement, Décision du parquet…"
+              className={inputClass}
+            />
+          </div>
+          <div className="min-w-[180px]">
+            <label className={labelClass}>Fichier (optionnel, max. 4 Mo)</label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              onChange={(e) => setPieceJointeFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-[12px] text-zinc-400 file:mr-2 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-[12px] file:text-white"
+            />
+          </div>
+          <button type="submit" disabled={pieceJointeSubmitting} className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50">
+            {pieceJointeSubmitting ? "Ajout…" : "Joindre"}
+          </button>
+        </form>
+        {pieceJointesLoading ? (
+          <p className="text-xs text-zinc-500">Chargement…</p>
+        ) : pieceJointesList.length === 0 ? (
+          <p className="text-[13px] text-zinc-500">Aucun document joint.</p>
+        ) : (
+          <ul className="space-y-2">
+            {pieceJointesList.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[13px]">
+                <span className="font-medium text-white">{p.titre}</span>
+                {p.fileName && <span className="text-zinc-500 text-xs truncate max-w-[140px]">{p.fileName}</span>}
+                <button type="button" onClick={() => deletePieceJointe(p.id)} className="p-1.5 rounded-lg text-zinc-400 hover:bg-red-500/10 hover:text-red-400 shrink-0" title="Supprimer">
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </li>
             ))}
           </ul>

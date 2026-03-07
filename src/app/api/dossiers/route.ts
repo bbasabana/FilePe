@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { getDb, dossiers, detenus } from "@/db";
 import { getSessionFromRequest } from "@/lib/auth-cookie";
 import { generateNumeroDossier } from "@/lib/numero-dossier";
+
+/** Champs retournés en liste : pas d’id interne (accès uniquement par numéro de dossier). */
+const listSelectFields = {
+  numeroDossier: dossiers.numeroDossier,
+  dateEntree: dossiers.dateEntree,
+  prevention: dossiers.prevention,
+  observation: dossiers.observation,
+  juridictionId: dossiers.juridictionId,
+  parquetId: dossiers.parquetId,
+  juridictionBasParquet: dossiers.juridictionBasParquet,
+  nom: detenus.nom,
+  prenom: detenus.prenom,
+  status: detenus.status,
+};
 
 export async function GET(request: NextRequest) {
   const session = getSessionFromRequest(request);
@@ -10,55 +24,44 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
   const db = getDb();
-  const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  const qRaw = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  const q = qRaw.length > 100 ? qRaw.slice(0, 100) : qRaw;
+  const qLike = q.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+  const statusFilter = request.nextUrl.searchParams.get("status")?.trim(); // "prevenu" | "detenu"
   const page = Math.max(1, Number(request.nextUrl.searchParams.get("page")) || 1);
   const limit = Math.min(50, Math.max(10, Number(request.nextUrl.searchParams.get("limit")) || 20));
   const offset = (page - 1) * limit;
 
-  const selectFields = {
-    id: dossiers.id,
-    numeroDossier: dossiers.numeroDossier,
-    dateEntree: dossiers.dateEntree,
-    prevention: dossiers.prevention,
-    observation: dossiers.observation,
-    juridictionId: dossiers.juridictionId,
-    parquetId: dossiers.parquetId,
-    juridictionBasParquet: dossiers.juridictionBasParquet,
-    nom: detenus.nom,
-    prenom: detenus.prenom,
-  };
   const searchCond = q
     ? or(
-        like(dossiers.numeroDossier, `%${q}%`),
-        like(detenus.nom, `%${q}%`),
-        like(detenus.prenom, `%${q}%`)
+        like(dossiers.numeroDossier, `%${qLike}%`),
+        like(detenus.nom, `%${qLike}%`),
+        like(detenus.prenom, `%${qLike}%`)
       )
     : undefined;
+  const statusCond =
+    statusFilter === "prevenu" || statusFilter === "detenu"
+      ? eq(detenus.status, statusFilter)
+      : undefined;
+  const whereCond =
+    searchCond && statusCond
+      ? and(searchCond, statusCond)
+      : searchCond ?? statusCond ?? undefined;
 
-  const list = searchCond
-    ? await db
-        .select(selectFields)
-        .from(dossiers)
-        .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
-        .where(searchCond)
-        .orderBy(desc(dossiers.dateEntree))
-        .limit(limit)
-        .offset(offset)
-    : await db
-        .select(selectFields)
-        .from(dossiers)
-        .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
-        .orderBy(desc(dossiers.dateEntree))
-        .limit(limit)
-        .offset(offset);
+  const list = await db
+    .select(listSelectFields)
+    .from(dossiers)
+    .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
+    .where(whereCond)
+    .orderBy(desc(dossiers.dateEntree))
+    .limit(limit)
+    .offset(offset);
 
-  const [{ count }] = searchCond
-    ? await db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(dossiers)
-        .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
-        .where(searchCond)
-    : await db.select({ count: sql<number>`count(*)::int` }).from(dossiers);
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(dossiers)
+    .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
+    .where(whereCond);
 
   return NextResponse.json({ list, total: count });
 }
@@ -157,7 +160,7 @@ export async function POST(request: NextRequest) {
         status: body.status || null,
       });
 
-      return NextResponse.json({ id: dossier.id, numeroDossier });
+      return NextResponse.json({ numeroDossier });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
       if (msg.includes("unique") || msg.includes("duplicate")) {

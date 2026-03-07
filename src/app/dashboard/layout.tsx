@@ -8,18 +8,24 @@ import { useAuthStore } from "@/store/auth-store";
 import {
   LayoutDashboard,
   FileText,
-  User,
+  UserCheck,
+  UserX,
   Settings,
   LogOut,
   Menu,
   X,
+  Truck,
+  Users,
 } from "lucide-react";
 
-const menuItems = [
+const menuItems: { href: string; label: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/dossiers", label: "Dossiers", icon: FileText },
-  { href: "/dashboard/detenus", label: "Détenus", icon: User },
-  { href: "/dashboard/referentiels", label: "Juridictions & Parquets", icon: Settings },
+  { href: "/dashboard/prevenus", label: "Prévenus", icon: UserCheck },
+  { href: "/dashboard/detenus", label: "Détenus", icon: UserX },
+  { href: "/dashboard/dossiers", label: "Tous les dossiers", icon: FileText },
+  { href: "/dashboard/vehicules", label: "Planification véhicules", icon: Truck },
+  { href: "/dashboard/referentiels", label: "Référentiels", icon: Settings },
+  { href: "/dashboard/utilisateurs", label: "Utilisateurs", icon: Users, adminOnly: true },
 ];
 
 export default function DashboardLayout({
@@ -77,7 +83,7 @@ export default function DashboardLayout({
           <span className="font-semibold text-[15px] text-white">FilePe</span>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-0.5">
-          {menuItems.map(({ href, label, icon: Icon }) => {
+          {menuItems.filter((item) => !item.adminOnly || user?.role === "admin").map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
             return (
               <Link
@@ -144,7 +150,7 @@ export default function DashboardLayout({
                 </button>
               </div>
               <nav className="py-4 px-3 space-y-0.5">
-                {menuItems.map(({ href, label, icon: Icon }) => {
+                {menuItems.filter((item) => !item.adminOnly || user?.role === "admin").map(({ href, label, icon: Icon }) => {
                   const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
                   return (
                     <Link

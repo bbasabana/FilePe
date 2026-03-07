@@ -11,6 +11,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:add-circonscription": "tsx scripts/add-circonscription.ts",
+    "db:migrate-photo-vehicules": "tsx scripts/migrate-photo-vehicules.ts",
+    "db:migrate-pdf-downloads": "tsx scripts/migrate-pdf-downloads.ts",
+    "db:migrate-users-blocked": "tsx scripts/migrate-users-blocked.ts",
+    "db:migrate-piece-jointes": "tsx scripts/migrate-piece-jointes.ts",
     "seed": "tsx scripts/seed-user.ts"
   },
   "dependencies": {
@@ -18,8 +23,10 @@
     "bcryptjs": "^2.4.3",
     "drizzle-kit": "^0.28.0",
     "drizzle-orm": "^0.36.0",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.460.0",
     "next": "^15.0.0",
+    "qrcode": "^1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^2.0.7",
@@ -28,6 +35,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^16.6.1",

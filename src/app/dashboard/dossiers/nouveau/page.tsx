@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, User, Shield, Badge } from "lucide-react";
 import { generateNumeroDossier } from "@/lib/numero-dossier";
@@ -49,6 +49,8 @@ const STATUS_OPTIONS = [
 
 export default function NouveauDossierPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const typeFromUrl = searchParams.get("type"); // "prevenu" | "detenu" => préremplit le statut
   const [step, setStep] = useState(1);
   const [juridictions, setJuridictions] = useState<Juridiction[]>([]);
   const [parquets, setParquets] = useState<Parquet[]>([]);
@@ -69,7 +71,9 @@ export default function NouveauDossierPage() {
   const [unite, setUnite] = useState("");
   const [detachement, setDetachement] = useState("");
   const [etatCivil, setEtatCivil] = useState<"marie" | "celibataire" | "veuf" | "">("");
-  const [status, setStatus] = useState<"prevenu" | "detenu" | "autre" | "">("");
+  const [status, setStatus] = useState<"prevenu" | "detenu" | "autre" | "">(
+    typeFromUrl === "prevenu" ? "prevenu" : typeFromUrl === "detenu" ? "detenu" : ""
+  );
 
   const [generatedNumeroDossier, setGeneratedNumeroDossier] = useState("");
   const [dateEntree, setDateEntree] = useState("");
@@ -90,9 +94,9 @@ export default function NouveauDossierPage() {
       .catch(() => setParquets([]));
   }, []);
 
-  const filteredParquets = juridictionId
-    ? parquets.filter((p) => p.juridictionId === juridictionId)
-    : parquets;
+  // Un seul choix : Juridiction près OU Parquet (mutuellement exclusifs)
+  const juridictionChosen = !!juridictionId;
+  const parquetChosen = !!parquetId;
 
   const isPolicierOuMilitaire = categorie === "policier" || categorie === "militaire";
 
@@ -148,7 +152,7 @@ export default function NouveauDossierPage() {
           unite: isPolicierOuMilitaire ? unite.trim() || null : null,
           detachement: isPolicierOuMilitaire ? detachement.trim() || null : null,
           etatCivil: isPolicierOuMilitaire && etatCivil ? etatCivil : null,
-          status: isPolicierOuMilitaire && status ? status : null,
+          status: status || (typeFromUrl === "prevenu" ? "prevenu" : typeFromUrl === "detenu" ? "detenu" : null),
         }),
       });
       const data = await res.json();
@@ -159,7 +163,7 @@ export default function NouveauDossierPage() {
         return;
       }
       toast.success("Dossier créé");
-      if (data.id) router.push(`/dashboard/dossiers/${data.id}`);
+      if (data.numeroDossier) router.push(`/dashboard/dossiers/${encodeURIComponent(data.numeroDossier)}`);
       else router.push("/dashboard/dossiers");
     } catch {
       setError("Erreur de connexion");
@@ -445,7 +449,9 @@ export default function NouveauDossierPage() {
                     setJuridictionId(e.target.value);
                     setParquetId("");
                   }}
-                  className={inputClass}
+                  disabled={parquetChosen}
+                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/[0.02]`}
+                  title={parquetChosen ? "Désélectionnez le parquet pour choisir une juridiction" : undefined}
                 >
                   <option value="">—</option>
                   {juridictions.map((j) => (
@@ -457,19 +463,20 @@ export default function NouveauDossierPage() {
                 <label className={labelClass}>Parquet (nom + près)</label>
                 <select
                   value={parquetId}
-                  onChange={(e) => setParquetId(e.target.value)}
-                  disabled={!juridictionId}
+                  onChange={(e) => {
+                    setParquetId(e.target.value);
+                    setJuridictionId("");
+                  }}
+                  disabled={juridictionChosen}
                   className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/[0.02]`}
-                  title={!juridictionId ? "Choisir d'abord une juridiction près" : undefined}
+                  title={juridictionChosen ? "Désélectionnez la juridiction pour choisir un parquet" : undefined}
                 >
                   <option value="">—</option>
-                  {filteredParquets.map((p) => (
+                  {parquets.map((p) => (
                     <option key={p.id} value={p.id}>{p.nom} près</option>
                   ))}
                 </select>
-                {!juridictionId && (
-                  <p className="mt-2 text-[11px] text-zinc-500">Choisir d&apos;abord une juridiction près</p>
-                )}
+                <p className="mt-2 text-[11px] text-zinc-500">Choisir l’un ou l’autre, pas les deux.</p>
               </div>
             </div>
             <div>

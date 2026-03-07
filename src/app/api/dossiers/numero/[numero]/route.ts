@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, dossiers, detenus, juridictions, parquets } from "@/db";
 import { getSessionFromRequest } from "@/lib/auth-cookie";
+import { normalizeAndValidateNumero } from "@/lib/numero-dossier";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ numero: string }> }
 ) {
   const session = getSessionFromRequest(_request);
   if (!session) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
-  const { id } = await params;
+  const numero = normalizeAndValidateNumero((await params).numero);
+  if (!numero) {
+    return NextResponse.json({ error: "Numéro de dossier invalide" }, { status: 400 });
+  }
   const db = getDb();
 
   const [row] = await db
@@ -42,20 +46,22 @@ export async function GET(
       detachement: detenus.detachement,
       etatCivil: detenus.etatCivil,
       status: detenus.status,
+      photoUrl: detenus.photoUrl,
+      empreintes: detenus.empreintes,
     })
     .from(dossiers)
     .leftJoin(detenus, eq(dossiers.id, detenus.dossierId))
     .leftJoin(juridictions, eq(dossiers.juridictionId, juridictions.id))
     .leftJoin(parquets, eq(dossiers.parquetId, parquets.id))
-    .where(eq(dossiers.id, id))
+    .where(eq(dossiers.numeroDossier, numero))
     .limit(1);
 
   if (!row) {
     return NextResponse.json({ error: "Dossier introuvable" }, { status: 404 });
   }
 
+  // Ne pas exposer les IDs en base : réponse sans id ni detenuId
   return NextResponse.json({
-    id: row.id,
     numeroDossier: row.numeroDossier,
     dateEntree: row.dateEntree,
     juridictionId: row.juridictionId,
@@ -67,7 +73,6 @@ export async function GET(
     observation: row.observation,
     detenu: row.detenuId
       ? {
-          id: row.detenuId,
           categorie: row.categorie,
           nom: row.nom,
           prenom: row.prenom,
@@ -83,6 +88,8 @@ export async function GET(
           detachement: row.detachement,
           etatCivil: row.etatCivil,
           status: row.status,
+          photoUrl: row.photoUrl ?? null,
+          empreintes: row.empreintes ?? null,
         }
       : null,
   });
@@ -90,14 +97,24 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ numero: string }> }
 ) {
   const session = getSessionFromRequest(request);
   if (!session) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
-  const { id } = await params;
+  const numero = normalizeAndValidateNumero((await params).numero);
+  if (!numero) {
+    return NextResponse.json({ error: "Numéro de dossier invalide" }, { status: 400 });
+  }
   const db = getDb();
+
+  const [dossier] = await db.select({ id: dossiers.id }).from(dossiers).where(eq(dossiers.numeroDossier, numero)).limit(1);
+  if (!dossier) {
+    return NextResponse.json({ error: "Dossier introuvable" }, { status: 404 });
+  }
+  const id = dossier.id;
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -138,6 +155,8 @@ export async function PATCH(
     detachement?: string | null;
     etatCivil?: "marie" | "celibataire" | "veuf" | null;
     status?: "prevenu" | "detenu" | "autre" | null;
+    photoUrl?: string | null;
+    empreintes?: string | null;
   } = {};
   if (body.categorie === "civil" || body.categorie === "policier" || body.categorie === "militaire") detenuPayload.categorie = body.categorie;
   if (typeof body.nom === "string") detenuPayload.nom = body.nom.trim();
@@ -156,6 +175,8 @@ export async function PATCH(
   if (body.etatCivil === null) detenuPayload.etatCivil = null;
   if (body.status === "prevenu" || body.status === "detenu" || body.status === "autre") detenuPayload.status = body.status;
   if (body.status === null) detenuPayload.status = null;
+  if (body.photoUrl !== undefined) detenuPayload.photoUrl = (body.photoUrl as string) || null;
+  if (body.empreintes !== undefined) detenuPayload.empreintes = (body.empreintes as string) || null;
 
   if (Object.keys(dossierPayload).length > 0) {
     await db.update(dossiers).set(dossierPayload).where(eq(dossiers.id, id));

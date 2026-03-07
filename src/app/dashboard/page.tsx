@@ -1,19 +1,12 @@
 import Link from "next/link";
-import { FileText, User } from "lucide-react";
+import { FileText, UserCheck, UserX, Truck, Settings } from "lucide-react";
 
 const cards = [
-  {
-    href: "/dashboard/dossiers",
-    label: "Dossiers",
-    description: "Créer et gérer les dossiers des détenus",
-    icon: FileText,
-  },
-  {
-    href: "/dashboard/detenus",
-    label: "Détenus",
-    description: "Identité, date d'entrée, prévention, observations",
-    icon: User,
-  },
+  { href: "/dashboard/prevenus", label: "Prévenus", description: "Dossiers des prévenus", icon: UserCheck },
+  { href: "/dashboard/detenus", label: "Détenus", description: "Dossiers des détenus", icon: UserX },
+  { href: "/dashboard/dossiers", label: "Tous les dossiers", description: "Liste complète et recherche", icon: FileText },
+  { href: "/dashboard/vehicules", label: "Planification véhicules", description: "Flotte et sorties planifiées", icon: Truck },
+  { href: "/dashboard/referentiels", label: "Référentiels", description: "Juridictions et parquets", icon: Settings },
 ];
 
 export default function DashboardPage() {
@@ -32,7 +25,7 @@ export default function DashboardPage() {
         <h2 className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 mb-4">
           Accès rapide
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map(({ href, label, description, icon: Icon }) => (
             <Link
               key={href}
