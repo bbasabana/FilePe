@@ -20,8 +20,8 @@ interface Parquet {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
-const labelClass = "block text-[12px] font-medium text-zinc-400 mb-1.5";
+  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
+const labelClass = "block text-[12px] font-medium text-slate-500 mb-1.5";
 
 const btnIcon = "h-4 w-4";
 const btnBase =
@@ -307,18 +307,18 @@ export default function ReferentielsPage() {
   return (
     <div className="max-w-3xl w-full animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-[22px] font-semibold text-white tracking-tight">
+        <h1 className="text-[22px] font-semibold text-slate-900 tracking-tight">
           Juridictions & Parquets
         </h1>
-        <p className="text-zinc-400 mt-1 text-[14px]">
+        <p className="text-slate-500 mt-1 text-[14px]">
           Gérer les valeurs des listes déroulantes utilisées dans les dossiers.
         </p>
       </div>
 
       <div className="space-y-8">
         {/* Juridictions près */}
-        <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-4">Juridictions près</h2>
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900 mb-4">Juridictions près</h2>
           {juridictionError && (
             <p className="mb-4 text-[13px] text-red-400">{juridictionError}</p>
           )}
@@ -353,12 +353,12 @@ export default function ReferentielsPage() {
             </button>
           </form>
           {loadingJ ? (
-            <p className="text-[13px] text-zinc-500">Chargement…</p>
+            <p className="text-[13px] text-slate-400">Chargement…</p>
           ) : juridictions.length === 0 ? (
-            <p className="text-[14px] text-zinc-500">Aucune juridiction. Ajoutez-en une ci-dessus.</p>
+            <p className="text-[14px] text-slate-400">Aucune juridiction. Ajoutez-en une ci-dessus.</p>
           ) : (
-            <div className="rounded-lg border border-white/[0.1] bg-white/[0.02] overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 text-[12px] font-medium text-zinc-500 uppercase tracking-wider border-b border-white/[0.08]">
+            <div className="rounded-lg border border-slate-300 bg-white overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 text-[12px] font-medium text-slate-400 uppercase tracking-wider border-b border-slate-200">
                 <div>Juridiction près</div>
                 <div>Code</div>
                 <div className="text-right">Actions</div>
@@ -366,7 +366,7 @@ export default function ReferentielsPage() {
               {juridictions.map((j) => (
                 <div
                   key={j.id}
-                  className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 items-center border-b border-white/[0.06] last:border-0 text-[14px]"
+                  className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 items-center border-b border-slate-200 last:border-0 text-[14px]"
                 >
                   {editingJuridictionId === j.id ? (
                     <>
@@ -398,7 +398,7 @@ export default function ReferentielsPage() {
                           type="button"
                           onClick={cancelEditJuridiction}
                           disabled={savingJId === j.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-2 text-[13px] font-medium text-zinc-400 hover:bg-white/5"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-500 hover:bg-slate-50"
                         >
                           <X className={btnIcon} />
                           Annuler
@@ -407,13 +407,13 @@ export default function ReferentielsPage() {
                     </>
                   ) : (
                     <>
-                      <div className="font-medium text-white">{j.nom} près</div>
-                      <div className="text-zinc-400 font-mono text-[13px]">{j.code ?? "—"}</div>
+                      <div className="font-medium text-slate-900">{j.nom} près</div>
+                      <div className="text-slate-500 font-mono text-[13px]">{j.code ?? "—"}</div>
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => startEditJuridiction(j)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-2 text-[13px] font-medium text-zinc-300 hover:bg-white/10 hover:text-white"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                         >
                           <Pencil className={btnIcon} />
                           Modifier
@@ -437,8 +437,8 @@ export default function ReferentielsPage() {
         </section>
 
         {/* Parquets */}
-        <section className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-6">
-          <h2 className="text-[15px] font-semibold text-white mb-4">Parquets</h2>
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900 mb-4">Parquets</h2>
           {parquetError && (
             <p className="mb-4 text-[13px] text-red-400">{parquetError}</p>
           )}
@@ -505,12 +505,12 @@ export default function ReferentielsPage() {
             </div>
           </form>
           {loadingP ? (
-            <p className="text-[13px] text-zinc-500">Chargement…</p>
+            <p className="text-[13px] text-slate-400">Chargement…</p>
           ) : parquets.length === 0 ? (
-            <p className="text-[14px] text-zinc-500">Aucun parquet. Ajoutez-en un ci-dessus.</p>
+            <p className="text-[14px] text-slate-400">Aucun parquet. Ajoutez-en un ci-dessus.</p>
           ) : (
-            <div className="rounded-lg border border-white/[0.1] bg-white/[0.02] overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 text-[12px] font-medium text-zinc-500 uppercase tracking-wider border-b border-white/[0.08]">
+            <div className="rounded-lg border border-slate-300 bg-white overflow-hidden">
+              <div className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 text-[12px] font-medium text-slate-400 uppercase tracking-wider border-b border-slate-200">
                 <div>Parquet près</div>
                 <div>Code</div>
                 <div>Juridiction près</div>
@@ -520,7 +520,7 @@ export default function ReferentielsPage() {
               {parquets.map((p) => (
                 <div
                   key={p.id}
-                  className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 items-center border-b border-white/[0.06] last:border-0 text-[14px]"
+                  className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 items-center border-b border-slate-200 last:border-0 text-[14px]"
                 >
                   {editingParquetId === p.id ? (
                     <>
@@ -572,7 +572,7 @@ export default function ReferentielsPage() {
                           type="button"
                           onClick={cancelEditParquet}
                           disabled={savingPId === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-2 text-[13px] font-medium text-zinc-400 hover:bg-white/5"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-500 hover:bg-slate-50"
                         >
                           <X className={btnIcon} />
                           Annuler
@@ -581,17 +581,17 @@ export default function ReferentielsPage() {
                     </>
                   ) : (
                     <>
-                      <div className="font-medium text-white">{p.nom} près</div>
-                      <div className="text-zinc-400 font-mono text-[13px]">{p.code ?? "—"}</div>
-                      <div className="text-zinc-400 text-[13px]">
+                      <div className="font-medium text-slate-900">{p.nom} près</div>
+                      <div className="text-slate-500 font-mono text-[13px]">{p.code ?? "—"}</div>
+                      <div className="text-slate-500 text-[13px]">
                         {p.juridictionId ? (juridictions.find((j) => j.id === p.juridictionId)?.nom ?? "—") + " près" : "—"}
                       </div>
-                      <div className="text-zinc-400 text-[13px]">{p.circonscription ?? "—"}</div>
+                      <div className="text-slate-500 text-[13px]">{p.circonscription ?? "—"}</div>
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => startEditParquet(p)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-2 text-[13px] font-medium text-zinc-300 hover:bg-white/10 hover:text-white"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                         >
                           <Pencil className={btnIcon} />
                           Modifier

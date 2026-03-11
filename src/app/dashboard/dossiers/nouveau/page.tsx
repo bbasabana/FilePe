@@ -174,23 +174,23 @@ export default function NouveauDossierPage() {
   }
 
   const inputClass =
-    "w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3.5 py-2.5 text-[14px] text-white placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition";
-  const labelClass = "block text-[12px] font-medium text-zinc-400 mb-2";
+    "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition";
+  const labelClass = "block text-[12px] font-medium text-slate-500 mb-2";
 
   return (
     <div className="max-w-2xl w-full animate-fade-in">
       {loading && (
         <div className="form-loader-overlay" aria-busy="true">
           <div className="form-loader-ring" aria-hidden />
-          <span className="text-[14px] text-zinc-400">Création du dossier…</span>
+          <span className="text-[14px] text-slate-500">Création du dossier…</span>
         </div>
       )}
 
       <header className="mb-8">
-        <h1 className="text-[22px] font-semibold text-white tracking-tight">
+        <h1 className="text-[22px] font-semibold text-slate-900 tracking-tight">
           Nouveau dossier
         </h1>
-        <p className="text-zinc-400 mt-1 text-[14px]">
+        <p className="text-slate-500 mt-1 text-[14px]">
           Créer un dossier détenu : catégorie, identité, dossier, prévention, observation.
         </p>
       </header>
@@ -204,13 +204,13 @@ export default function NouveauDossierPage() {
                   ? "bg-primary text-white scale-110"
                   : currentStepDisplay > i + 1
                     ? "bg-primary/20 text-primary"
-                    : "bg-white/10 text-zinc-500"
+                    : "bg-slate-100 text-slate-400"
               }`}
             >
               {i + 1}
             </div>
             {i < displaySteps.length - 1 && (
-              <div className="h-px w-6 bg-white/10 shrink-0 transition-opacity" aria-hidden />
+              <div className="h-px w-6 bg-slate-100 shrink-0 transition-opacity" aria-hidden />
             )}
           </div>
         ))}
@@ -225,8 +225,8 @@ export default function NouveauDossierPage() {
 
         {/* Étape 1 : Catégorie */}
         {step === 1 && (
-          <section className="step-enter rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-6">
-            <h2 className="text-[15px] font-semibold text-white">{STEPS[0].title}</h2>
+          <section className="step-enter rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <h2 className="text-[15px] font-semibold text-slate-900">{STEPS[0].title}</h2>
             <div>
               <label className={labelClass}>Choisir la catégorie</label>
               <div className="grid grid-cols-3 gap-3">
@@ -237,8 +237,8 @@ export default function NouveauDossierPage() {
                     onClick={() => setCategorie(value)}
                     className={`flex flex-col items-center gap-2 rounded-xl border-2 px-4 py-4 transition-all duration-200 ${
                       categorie === value
-                        ? "border-primary bg-primary/10 text-white"
-                        : "border-white/[0.1] bg-white/[0.02] text-zinc-400 hover:border-white/20 hover:text-zinc-200"
+                        ? "border-primary bg-emerald-50 text-slate-900"
+                        : "border-slate-300 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800"
                     }`}
                   >
                     <Icon className="h-6 w-6" />
@@ -252,8 +252,8 @@ export default function NouveauDossierPage() {
 
         {/* Étape 2 : Identité */}
         {step === 2 && (
-          <section className="step-enter rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-6">
-            <h2 className="text-[15px] font-semibold text-white">{STEPS[1].title}</h2>
+          <section className="step-enter rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <h2 className="text-[15px] font-semibold text-slate-900">{STEPS[1].title}</h2>
             <div className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -333,8 +333,8 @@ export default function NouveauDossierPage() {
 
         {/* Étape 3 : Informations policier / militaire (uniquement si catégorie policier ou militaire) */}
         {step === 3 && isPolicierOuMilitaire && (
-          <section className="step-enter rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-6">
-            <h2 className="text-[15px] font-semibold text-white">
+          <section className="step-enter rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <h2 className="text-[15px] font-semibold text-slate-900">
               {categorie === "policier" ? "Informations policier" : "Informations militaire"}
             </h2>
             <div className="space-y-6">
@@ -421,14 +421,14 @@ export default function NouveauDossierPage() {
 
         {/* Étape 4 : Dossier */}
         {step === 4 && (
-          <section className="step-enter rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-6">
-            <h2 className="text-[15px] font-semibold text-white">{STEPS[3].title}</h2>
+          <section className="step-enter rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <h2 className="text-[15px] font-semibold text-slate-900">{STEPS[3].title}</h2>
             <div>
               <label className={labelClass}>Numéro du dossier</label>
-              <div className="rounded-lg border border-white/20 bg-white/[0.04] px-3.5 py-2.5 text-[15px] text-white font-mono tracking-wider">
+              <div className="rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-[15px] text-slate-900 font-mono tracking-wider">
                 {generatedNumeroDossier || "—"}
               </div>
-              <p className="mt-2 text-[11px] text-zinc-500">Généré automatiquement à l&apos;arrivée sur cette étape.</p>
+              <p className="mt-2 text-[11px] text-slate-400">Généré automatiquement à l&apos;arrivée sur cette étape.</p>
             </div>
             <div>
               <label className={labelClass}>Date d&apos;entrée en détention *</label>
@@ -450,7 +450,7 @@ export default function NouveauDossierPage() {
                     setParquetId("");
                   }}
                   disabled={parquetChosen}
-                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/[0.02]`}
+                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white`}
                   title={parquetChosen ? "Désélectionnez le parquet pour choisir une juridiction" : undefined}
                 >
                   <option value="">—</option>
@@ -468,7 +468,7 @@ export default function NouveauDossierPage() {
                     setJuridictionId("");
                   }}
                   disabled={juridictionChosen}
-                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white/[0.02]`}
+                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-white`}
                   title={juridictionChosen ? "Désélectionnez la juridiction pour choisir un parquet" : undefined}
                 >
                   <option value="">—</option>
@@ -476,7 +476,7 @@ export default function NouveauDossierPage() {
                     <option key={p.id} value={p.id}>{p.nom} près</option>
                   ))}
                 </select>
-                <p className="mt-2 text-[11px] text-zinc-500">Choisir l’un ou l’autre, pas les deux.</p>
+                <p className="mt-2 text-[11px] text-slate-400">Choisir l’un ou l’autre, pas les deux.</p>
               </div>
             </div>
             <div>
@@ -493,8 +493,8 @@ export default function NouveauDossierPage() {
 
         {/* Étape 5 : Prévention et observation */}
         {step === 5 && (
-          <section className="step-enter rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 space-y-6">
-            <h2 className="text-[15px] font-semibold text-white">{STEPS[4].title}</h2>
+          <section className="step-enter rounded-xl border border-slate-200 bg-white p-6 space-y-6">
+            <h2 className="text-[15px] font-semibold text-slate-900">{STEPS[4].title}</h2>
             <div>
               <label className={labelClass}>Prévention (motif de détention) *</label>
               <textarea
@@ -527,7 +527,7 @@ export default function NouveauDossierPage() {
                 if (step === 4 && !isPolicierOuMilitaire) setStep(2);
                 else setStep(step - 1);
               }}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-4 py-2.5 text-[13px] font-medium text-zinc-300 hover:bg-white/5 transition"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition"
             >
               <ChevronLeft className="h-4 w-4" />
               Précédent
@@ -535,7 +535,7 @@ export default function NouveauDossierPage() {
           ) : (
             <Link
               href="/dashboard/dossiers"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-4 py-2.5 text-[13px] font-medium text-zinc-400 hover:bg-white/5 hover:text-zinc-200 transition"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-[13px] font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition"
             >
               Annuler
             </Link>

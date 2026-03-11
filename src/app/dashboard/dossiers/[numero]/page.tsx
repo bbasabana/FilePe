@@ -402,7 +402,7 @@ export default function DossierDetailPage() {
   if (!numero || !data) {
     return (
       <div className="max-w-5xl w-full">
-        <p className="text-zinc-400 text-sm">Dossier introuvable.</p>
+        <p className="text-slate-500 text-sm">Dossier introuvable.</p>
         <Link href="/dashboard/dossiers" className="mt-3 inline-block text-xs text-primary hover:underline">
           Liste des dossiers
         </Link>
@@ -412,33 +412,33 @@ export default function DossierDetailPage() {
 
   const d = data.detenu;
 
-  const inputClass = "w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white";
-  const labelClass = "block text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-1";
+  const inputClass = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[13px] text-slate-900";
+  const labelClass = "block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1";
 
   return (
     <div className="max-w-5xl w-full animate-fade-in">
       {/* En-tête : ligne 1 = titre + actions, ligne 2 = N° | Entrée | Juridiction OU Parquet | PDF */}
-      <header className="mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+      <header className="mb-6 rounded-2xl border border-slate-200 bg-white overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5">
           <div className="min-w-0 flex-1 flex items-center gap-4">
             {d?.photoUrl && (
-              <div className="shrink-0 rounded-lg border border-white/10 overflow-hidden bg-white/5 w-14 h-14">
+              <div className="shrink-0 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 w-14 h-14">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={d.photoUrl} alt="" className="w-full h-full object-cover" />
               </div>
             )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-baseline gap-2">
-                <h1 className="text-lg font-semibold text-white tracking-tight truncate">
+                <h1 className="text-lg font-semibold text-slate-900 tracking-tight truncate">
                   Dossier <span className="font-mono text-primary">{data.numeroDossier}</span>
                 </h1>
                 {d?.status && (
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-medium text-zinc-400 uppercase tracking-wider capitalize">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500 uppercase tracking-wider capitalize">
                     {d.status}
                   </span>
                 )}
               </div>
-              <p className="text-zinc-400 mt-0.5 text-sm truncate">
+              <p className="text-slate-500 mt-0.5 text-sm truncate">
                 {d ? `${d.nom} ${d.prenom}` : "—"}
               </p>
             </div>
@@ -449,7 +449,7 @@ export default function DossierDetailPage() {
               href={`/scan/${encodeURIComponent(data.numeroDossier)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
             >
               Scan
             </a>
@@ -482,7 +482,7 @@ export default function DossierDetailPage() {
                       toast.error("Erreur lors de la génération du PDF", { id: "pdf" });
                     }
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
                 >
                   <FileDown className="h-3.5 w-3.5" />
                   PDF
@@ -490,7 +490,7 @@ export default function DossierDetailPage() {
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Modifier
@@ -535,7 +535,7 @@ export default function DossierDetailPage() {
                     });
                   }}
                   disabled={saving}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 transition"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
                 >
                   <X className="h-3.5 w-3.5" />
                   Annuler
@@ -544,46 +544,46 @@ export default function DossierDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[0.06] bg-white/[0.02] px-5 py-3 text-[13px]">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-200 bg-white px-5 py-3 text-[13px]">
           <span className="flex items-center gap-1.5">
-            <span className="text-zinc-500">N°</span>
-            <span className="font-mono font-medium text-white">{data.numeroDossier}</span>
+            <span className="text-slate-400">N°</span>
+            <span className="font-mono font-medium text-slate-900">{data.numeroDossier}</span>
           </span>
-          <span className="text-zinc-600">|</span>
+          <span className="text-slate-400">|</span>
           <span className="flex items-center gap-1.5">
-            <span className="text-zinc-500">Entrée</span>
-            <span className="text-white">{data.dateEntree}</span>
+            <span className="text-slate-400">Entrée</span>
+            <span className="text-slate-900">{data.dateEntree}</span>
           </span>
-          <span className="text-zinc-600">|</span>
+          <span className="text-slate-400">|</span>
           <span className="flex items-center gap-1.5">
             {data.juridictionNom ? (
               <>
-                <span className="text-zinc-500">Juridiction</span>
-                <span className="text-white">{data.juridictionNom} près</span>
+                <span className="text-slate-400">Juridiction</span>
+                <span className="text-slate-900">{data.juridictionNom} près</span>
               </>
             ) : data.parquetNom ? (
               <>
-                <span className="text-zinc-500">Parquet</span>
-                <span className="text-white">{data.parquetNom} près</span>
+                <span className="text-slate-400">Parquet</span>
+                <span className="text-slate-900">{data.parquetNom} près</span>
               </>
             ) : (
-              <span className="text-zinc-500">—</span>
+              <span className="text-slate-400">—</span>
             )}
           </span>
           {pdfStats.total > 0 && (
             <>
-              <span className="text-zinc-600">|</span>
+              <span className="text-slate-400">|</span>
               <button
                 type="button"
                 onClick={() => setShowPdfDownloadsModal(true)}
-                className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -m-1 hover:bg-white/5 transition text-left"
+                className="flex items-center gap-1.5 rounded-md px-1.5 py-0.5 -m-1 hover:bg-slate-50 transition text-left"
                 title="Voir tous les détails des téléchargements"
               >
-                <Download className="h-3.5 w-3.5 text-zinc-500" />
-                <span className="text-zinc-500">PDF :</span>
-                <span className="text-white font-medium">{pdfStats.total} téléchargement{pdfStats.total > 1 ? "s" : ""}</span>
+                <Download className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-slate-400">PDF :</span>
+                <span className="text-slate-900 font-medium">{pdfStats.total} téléchargement{pdfStats.total > 1 ? "s" : ""}</span>
                 {pdfStats.items[0] && (
-                  <span className="text-zinc-500 text-[11px]">
+                  <span className="text-slate-400 text-[11px]">
                     (dernier {pdfStats.items[0].date} {pdfStats.items[0].time})
                   </span>
                 )}
@@ -601,53 +601,53 @@ export default function DossierDetailPage() {
 
       {showPdfDownloadsModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
           onClick={() => setShowPdfDownloadsModal(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="pdf-downloads-title"
         >
           <div
-            className="rounded-2xl border border-white/[0.1] bg-zinc-900 shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+            className="rounded-2xl border border-slate-300 bg-white shadow-xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/[0.08]">
-              <h2 id="pdf-downloads-title" className="text-base font-semibold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-slate-200">
+              <h2 id="pdf-downloads-title" className="text-base font-semibold text-slate-900 flex items-center gap-2">
                 <Download className="h-5 w-5 text-primary" />
                 Historique des téléchargements PDF
               </h2>
               <button
                 type="button"
                 onClick={() => setShowPdfDownloadsModal(false)}
-                className="p-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white transition"
+                className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition"
                 aria-label="Fermer"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="overflow-y-auto flex-1 p-5">
-              <p className="text-[13px] text-zinc-400 mb-4">
+              <p className="text-[13px] text-slate-500 mb-4">
                 {pdfStats.total} téléchargement{pdfStats.total > 1 ? "s" : ""} enregistré{pdfStats.total > 1 ? "s" : ""} pour ce dossier.
               </p>
               {pdfStats.items.length === 0 ? (
-                <p className="text-zinc-500 text-sm">Aucun détail disponible.</p>
+                <p className="text-slate-400 text-sm">Aucun détail disponible.</p>
               ) : (
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.08]">
-                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">#</th>
-                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Date</th>
-                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Heure</th>
-                      <th className="pb-2.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Téléchargé par</th>
+                    <tr className="border-b border-slate-200">
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">#</th>
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                      <th className="pb-2.5 pr-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Heure</th>
+                      <th className="pb-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Téléchargé par</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pdfStats.items.map((item, index) => (
-                      <tr key={index} className="border-b border-white/[0.05] last:border-0">
-                        <td className="py-2.5 pr-3 text-zinc-500 tabular-nums">{index + 1}</td>
-                        <td className="py-2.5 pr-3 text-white">{item.date ?? "—"}</td>
-                        <td className="py-2.5 pr-3 text-white">{item.time ?? "—"}</td>
-                        <td className="py-2.5 text-zinc-300">{item.downloadedBy ?? "—"}</td>
+                      <tr key={index} className="border-b border-slate-200 last:border-0">
+                        <td className="py-2.5 pr-3 text-slate-400 tabular-nums">{index + 1}</td>
+                        <td className="py-2.5 pr-3 text-slate-900">{item.date ?? "—"}</td>
+                        <td className="py-2.5 pr-3 text-slate-900">{item.time ?? "—"}</td>
+                        <td className="py-2.5 text-slate-700">{item.downloadedBy ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -659,8 +659,8 @@ export default function DossierDetailPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-          <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Identité</h2>
+        <section className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h2 className="text-[12px] font-semibold text-slate-900 uppercase tracking-wider mb-4 text-slate-500">Identité</h2>
           {editing && form.detenu ? (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -707,8 +707,8 @@ export default function DossierDetailPage() {
                 </div>
               </div>
               {(form.detenu.categorie === "policier" || form.detenu.categorie === "militaire") && (
-                <div className="border-t border-white/[0.06] pt-3 space-y-3">
-                  <h3 className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+                <div className="border-t border-slate-200 pt-3 space-y-3">
+                  <h3 className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
                     {form.detenu.categorie === "policier" ? "Policier / Militaire" : "Militaire"}
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -725,21 +725,21 @@ export default function DossierDetailPage() {
             </div>
           ) : (
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[13px]">
-              {d?.categorie && (<><dt className="text-zinc-500">Catégorie</dt><dd className="text-white capitalize">{d.categorie}</dd></>)}
-              <><dt className="text-zinc-500">Nom / Prénom</dt><dd className="text-white">{d ? `${d.nom} ${d.prenom}` : "—"}</dd></>
-              <><dt className="text-zinc-500">Poste</dt><dd className="text-white">{d?.poste ?? "—"}</dd></>
-              <><dt className="text-zinc-500">Naissance</dt><dd className="text-white">{d ? [d.lieuNaissance, d.dateNaissance].filter(Boolean).join(" · ") || "—" : "—"}</dd></>
-              <><dt className="text-zinc-500">Nationalité</dt><dd className="text-white">{d?.nationalite ?? "—"}</dd></>
-              <><dt className="text-zinc-500">Adresse</dt><dd className="text-white col-span-2">{d?.adresse ?? "—"}</dd></>
+              {d?.categorie && (<><dt className="text-slate-400">Catégorie</dt><dd className="text-slate-900 capitalize">{d.categorie}</dd></>)}
+              <><dt className="text-slate-400">Nom / Prénom</dt><dd className="text-slate-900">{d ? `${d.nom} ${d.prenom}` : "—"}</dd></>
+              <><dt className="text-slate-400">Poste</dt><dd className="text-slate-900">{d?.poste ?? "—"}</dd></>
+              <><dt className="text-slate-400">Naissance</dt><dd className="text-slate-900">{d ? [d.lieuNaissance, d.dateNaissance].filter(Boolean).join(" · ") || "—" : "—"}</dd></>
+              <><dt className="text-slate-400">Nationalité</dt><dd className="text-slate-900">{d?.nationalite ?? "—"}</dd></>
+              <><dt className="text-slate-400">Adresse</dt><dd className="text-slate-900 col-span-2">{d?.adresse ?? "—"}</dd></>
               {(d?.categorie === "policier" || d?.categorie === "militaire") && (
                 <>
-                  {d?.matricule && (<><dt className="text-zinc-500">Matricule</dt><dd className="text-white">{d.matricule}</dd></>)}
-                  {d?.grade && (<><dt className="text-zinc-500">Grade</dt><dd className="text-white">{d.grade}</dd></>)}
-                  {d?.fonction && (<><dt className="text-zinc-500">Fonction</dt><dd className="text-white">{d.fonction}</dd></>)}
-                  {d?.unite && (<><dt className="text-zinc-500">Unité</dt><dd className="text-white">{d.unite}</dd></>)}
-                  {d?.detachement && (<><dt className="text-zinc-500">Détachement</dt><dd className="text-white">{d.detachement}</dd></>)}
-                  {d?.etatCivil && (<><dt className="text-zinc-500">État civil</dt><dd className="text-white">{d.etatCivil === "marie" ? "Marié(e)" : d.etatCivil === "celibataire" ? "Célibataire" : "Veuve/Veuf"}</dd></>)}
-                  {d?.status && (<><dt className="text-zinc-500">Statut</dt><dd className="text-white capitalize">{d.status}</dd></>)}
+                  {d?.matricule && (<><dt className="text-slate-400">Matricule</dt><dd className="text-slate-900">{d.matricule}</dd></>)}
+                  {d?.grade && (<><dt className="text-slate-400">Grade</dt><dd className="text-slate-900">{d.grade}</dd></>)}
+                  {d?.fonction && (<><dt className="text-slate-400">Fonction</dt><dd className="text-slate-900">{d.fonction}</dd></>)}
+                  {d?.unite && (<><dt className="text-slate-400">Unité</dt><dd className="text-slate-900">{d.unite}</dd></>)}
+                  {d?.detachement && (<><dt className="text-slate-400">Détachement</dt><dd className="text-slate-900">{d.detachement}</dd></>)}
+                  {d?.etatCivil && (<><dt className="text-slate-400">État civil</dt><dd className="text-slate-900">{d.etatCivil === "marie" ? "Marié(e)" : d.etatCivil === "celibataire" ? "Célibataire" : "Veuve/Veuf"}</dd></>)}
+                  {d?.status && (<><dt className="text-slate-400">Statut</dt><dd className="text-slate-900 capitalize">{d.status}</dd></>)}
                 </>
               )}
             </dl>
@@ -747,8 +747,8 @@ export default function DossierDetailPage() {
         </section>
 
         <div className="space-y-4">
-          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-            <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Dossier</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-[12px] font-semibold text-slate-900 uppercase tracking-wider mb-4 text-slate-500">Dossier</h2>
             {editing ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -759,17 +759,17 @@ export default function DossierDetailPage() {
               </div>
             ) : (
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
-                <><dt className="text-zinc-500">N° dossier</dt><dd className="text-white font-mono">{data.numeroDossier}</dd></>
-                <><dt className="text-zinc-500">Date entrée</dt><dd className="text-white">{data.dateEntree}</dd></>
-                <><dt className="text-zinc-500">Juridiction près</dt><dd className="text-white">{data.juridictionNom ? `${data.juridictionNom} près` : "—"}</dd></>
-                <><dt className="text-zinc-500">Parquet</dt><dd className="text-white">{data.parquetNom ? `${data.parquetNom} près` : "—"}</dd></>
-                <><dt className="text-zinc-500">J. bas parquet</dt><dd className="text-white col-span-2">{data.juridictionBasParquet ?? "—"}</dd></>
+                <><dt className="text-slate-400">N° dossier</dt><dd className="text-slate-900 font-mono">{data.numeroDossier}</dd></>
+                <><dt className="text-slate-400">Date entrée</dt><dd className="text-slate-900">{data.dateEntree}</dd></>
+                <><dt className="text-slate-400">Juridiction près</dt><dd className="text-slate-900">{data.juridictionNom ? `${data.juridictionNom} près` : "—"}</dd></>
+                <><dt className="text-slate-400">Parquet</dt><dd className="text-slate-900">{data.parquetNom ? `${data.parquetNom} près` : "—"}</dd></>
+                <><dt className="text-slate-400">J. bas parquet</dt><dd className="text-slate-900 col-span-2">{data.juridictionBasParquet ?? "—"}</dd></>
               </dl>
             )}
           </section>
 
-          <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-            <h2 className="text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">Prévention et observation</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-[12px] font-semibold text-slate-900 uppercase tracking-wider mb-4 text-slate-500">Prévention et observation</h2>
             {editing ? (
               <div className="space-y-3">
                 <div><label className={labelClass}>Prévention</label><textarea value={form.prevention ?? ""} onChange={(e) => setForm((f) => ({ ...f, prevention: e.target.value }))} rows={2} className={`${inputClass} resize-none`} /></div>
@@ -777,8 +777,8 @@ export default function DossierDetailPage() {
               </div>
             ) : (
               <dl className="space-y-2 text-[13px]">
-                <div><dt className="text-zinc-500 mb-0.5">Prévention</dt><dd className="text-white whitespace-pre-wrap leading-snug">{data.prevention || "—"}</dd></div>
-                <div><dt className="text-zinc-500 mb-0.5">Observation</dt><dd className="text-white whitespace-pre-wrap leading-snug">{data.observation ?? "—"}</dd></div>
+                <div><dt className="text-slate-400 mb-0.5">Prévention</dt><dd className="text-slate-900 whitespace-pre-wrap leading-snug">{data.prevention || "—"}</dd></div>
+                <div><dt className="text-slate-400 mb-0.5">Observation</dt><dd className="text-slate-900 whitespace-pre-wrap leading-snug">{data.observation ?? "—"}</dd></div>
               </dl>
             )}
           </section>
@@ -803,8 +803,8 @@ export default function DossierDetailPage() {
         )}
       </div>
 
-      <section className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">
+      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-slate-900 uppercase tracking-wider mb-4 text-slate-500">
           <GraduationCap className="h-4 w-4 text-primary" />
           Formations
         </h2>
@@ -839,32 +839,32 @@ export default function DossierDetailPage() {
           </div>
         </form>
         {formationsLoading ? (
-          <p className="text-xs text-zinc-500">Chargement…</p>
+          <p className="text-xs text-slate-400">Chargement…</p>
         ) : formationsList.length === 0 ? (
-          <p className="text-[13px] text-zinc-500">Aucune formation.</p>
+          <p className="text-[13px] text-slate-400">Aucune formation.</p>
         ) : (
           <ul className="space-y-2">
             {formationsList.map((f) => (
-              <li key={f.id} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[13px]">
-                <span className="font-medium text-white">{f.intitule}</span>
+              <li key={f.id} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px]">
+                <span className="font-medium text-slate-900">{f.intitule}</span>
                 {(f.organisme || f.dateDebut || f.dateFin) && (
-                  <span className="text-zinc-500 text-xs">
+                  <span className="text-slate-400 text-xs">
                     {[f.organisme, f.dateDebut && f.dateFin ? `${f.dateDebut} → ${f.dateFin}` : null].filter(Boolean).join(" · ")}
                   </span>
                 )}
-                {f.observation && <span className="w-full text-zinc-500 text-xs mt-0.5 block">{f.observation}</span>}
+                {f.observation && <span className="w-full text-slate-400 text-xs mt-0.5 block">{f.observation}</span>}
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
-        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-white uppercase tracking-wider mb-4 text-zinc-400">
+      <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
+        <h2 className="flex items-center gap-2 text-[12px] font-semibold text-slate-900 uppercase tracking-wider mb-4 text-slate-500">
           <Paperclip className="h-4 w-4 text-primary" />
           Pièces jointes
         </h2>
-        <p className="text-[12px] text-zinc-500 mb-4">
+        <p className="text-[12px] text-slate-400 mb-4">
           Documents dressés par le parquet ou la cour pour le prévenu/détenu. Le titre apparaît dans le PDF généré.
         </p>
         <form onSubmit={addPieceJointe} className="flex flex-wrap items-end gap-3 mb-4">
@@ -885,7 +885,7 @@ export default function DossierDetailPage() {
               type="file"
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               onChange={(e) => setPieceJointeFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-[12px] text-zinc-400 file:mr-2 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-[12px] file:text-white"
+              className="block w-full text-[12px] text-slate-500 file:mr-2 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-[12px] file:text-slate-900"
             />
           </div>
           <button type="submit" disabled={pieceJointeSubmitting} className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50">
@@ -893,16 +893,16 @@ export default function DossierDetailPage() {
           </button>
         </form>
         {pieceJointesLoading ? (
-          <p className="text-xs text-zinc-500">Chargement…</p>
+          <p className="text-xs text-slate-400">Chargement…</p>
         ) : pieceJointesList.length === 0 ? (
-          <p className="text-[13px] text-zinc-500">Aucun document joint.</p>
+          <p className="text-[13px] text-slate-400">Aucun document joint.</p>
         ) : (
           <ul className="space-y-2">
             {pieceJointesList.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[13px]">
-                <span className="font-medium text-white">{p.titre}</span>
-                {p.fileName && <span className="text-zinc-500 text-xs truncate max-w-[140px]">{p.fileName}</span>}
-                <button type="button" onClick={() => deletePieceJointe(p.id)} className="p-1.5 rounded-lg text-zinc-400 hover:bg-red-500/10 hover:text-red-400 shrink-0" title="Supprimer">
+              <li key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[13px]">
+                <span className="font-medium text-slate-900">{p.titre}</span>
+                {p.fileName && <span className="text-slate-400 text-xs truncate max-w-[140px]">{p.fileName}</span>}
+                <button type="button" onClick={() => deletePieceJointe(p.id)} className="p-1.5 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-400 shrink-0" title="Supprimer">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </li>

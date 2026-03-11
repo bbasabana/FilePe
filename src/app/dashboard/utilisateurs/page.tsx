@@ -81,7 +81,7 @@ export default function UtilisateursPage() {
   if (currentUser?.role !== "admin") {
     return (
       <div className="max-w-md mx-auto py-12 text-center">
-        <p className="text-zinc-400 text-sm">Accès réservé aux administrateurs.</p>
+        <p className="text-slate-500 text-sm">Accès réservé aux administrateurs.</p>
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
@@ -229,34 +229,34 @@ export default function UtilisateursPage() {
   return (
     <div className="max-w-4xl w-full animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-[22px] font-semibold text-white tracking-tight flex items-center gap-2">
+        <h1 className="text-[22px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
           <UsersIcon className="h-6 w-6 text-primary" />
           Utilisateurs
         </h1>
-        <p className="text-zinc-400 mt-1 text-[14px]">
+        <p className="text-slate-500 mt-1 text-[14px]">
           Ajouter des utilisateurs, gérer les rôles, bloquer ou modifier les mots de passe.
         </p>
       </div>
 
-      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5 mb-6">
-        <h2 className="text-[13px] font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 mb-6">
+        <h2 className="text-[13px] font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Nouvel utilisateur
         </h2>
         <form onSubmit={addUser} className="flex flex-wrap items-end gap-3">
           <div className="min-w-[200px]">
-            <label className="block text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-1">Email *</label>
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Email *</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="utilisateur@exemple.cd"
-              className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[14px] text-white placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <div className="min-w-[160px]">
-            <label className="block text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-1">Mot de passe * (min. 6)</label>
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Mot de passe * (min. 6)</label>
             <input
               type="password"
               value={password}
@@ -264,15 +264,15 @@ export default function UtilisateursPage() {
               required
               minLength={6}
               placeholder="••••••••"
-              className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[14px] text-white placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
           <div className="min-w-[120px]">
-            <label className="block text-[11px] font-medium text-zinc-500 uppercase tracking-wider mb-1">Rôle</label>
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Rôle</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as "admin" | "juriste")}
-              className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[14px] text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="juriste">Juriste</option>
               <option value="admin">Admin</option>
@@ -289,31 +289,31 @@ export default function UtilisateursPage() {
         </form>
       </section>
 
-      <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
-        <div className="p-4 border-b border-white/[0.06]">
-          <h2 className="text-[13px] font-semibold text-white uppercase tracking-wider">Liste des utilisateurs</h2>
+      <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+        <div className="p-4 border-b border-slate-200">
+          <h2 className="text-[13px] font-semibold text-slate-900 uppercase tracking-wider">Liste des utilisateurs</h2>
         </div>
         {list.length === 0 ? (
-          <div className="p-8 text-center text-zinc-500 text-sm">Aucun utilisateur.</div>
+          <div className="p-8 text-center text-slate-400 text-sm">Aucun utilisateur.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/[0.06]">
-                  <th className="px-4 py-3 text-[12px] font-medium text-zinc-400">Email</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-zinc-400">Rôle</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-zinc-400">État</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-zinc-400 text-right">Actions</th>
+                <tr className="border-b border-slate-200">
+                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">Email</th>
+                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">Rôle</th>
+                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">État</th>
+                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {list.map((u) => (
-                  <tr key={u.id} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 text-white flex items-center gap-2">
-                      <UserCircle className="h-4 w-4 text-zinc-500 shrink-0" />
+                  <tr key={u.id} className="border-b border-slate-200 hover:bg-slate-50">
+                    <td className="px-4 py-3 text-slate-900 flex items-center gap-2">
+                      <UserCircle className="h-4 w-4 text-slate-400 shrink-0" />
                       {u.email}
                       {u.id === currentUser?.id && (
-                        <span className="text-[10px] text-zinc-500">(vous)</span>
+                        <span className="text-[10px] text-slate-400">(vous)</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -321,7 +321,7 @@ export default function UtilisateursPage() {
                         value={u.role}
                         onChange={(e) => changeRole(u, e.target.value as "admin" | "juriste")}
                         disabled={u.id === currentUser?.id}
-                        className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1 text-[12px] text-white focus:border-primary focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-[12px] text-slate-900 focus:border-primary focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <option value="juriste">Juriste</option>
                         <option value="admin">Admin</option>
@@ -341,7 +341,7 @@ export default function UtilisateursPage() {
                           onClick={() => toggleBlock(u)}
                           disabled={u.id === currentUser?.id}
                           title={u.blocked ? "Débloquer" : "Bloquer"}
-                          className="p-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-40 disabled:pointer-events-none"
+                          className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:pointer-events-none"
                         >
                           {u.blocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                         </button>
@@ -349,7 +349,7 @@ export default function UtilisateursPage() {
                           type="button"
                           onClick={() => { setPasswordUserId(u.id); setNewPassword(""); }}
                           title="Modifier le mot de passe"
-                          className="p-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white"
+                          className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                         >
                           <Key className="h-4 w-4" />
                         </button>
@@ -358,7 +358,7 @@ export default function UtilisateursPage() {
                           onClick={() => deleteUser(u)}
                           disabled={u.id === currentUser?.id}
                           title="Supprimer"
-                          className="p-2 rounded-lg text-zinc-400 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40 disabled:pointer-events-none"
+                          className="p-2 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40 disabled:pointer-events-none"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -374,11 +374,11 @@ export default function UtilisateursPage() {
 
       {passwordUserId && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/60" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} aria-hidden />
-          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/[0.1] bg-[#111] p-5 shadow-xl">
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} aria-hidden />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-300 bg-white p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[15px] font-semibold text-white">Modifier le mot de passe</h3>
-              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="p-2 rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white">
+              <h3 className="text-[15px] font-semibold text-slate-900">Modifier le mot de passe</h3>
+              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -388,10 +388,10 @@ export default function UtilisateursPage() {
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Nouveau mot de passe (min. 6 caractères)"
               minLength={6}
-              className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[14px] text-white placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
             />
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="rounded-lg border border-white/20 px-4 py-2 text-[13px] text-zinc-400 hover:bg-white/5">
+              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="rounded-lg border border-slate-300 px-4 py-2 text-[13px] text-slate-500 hover:bg-slate-50">
                 Annuler
               </button>
               <button type="button" onClick={saveNewPassword} disabled={passwordSaving || newPassword.trim().length < 6} className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50">

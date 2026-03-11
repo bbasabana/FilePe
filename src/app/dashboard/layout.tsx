@@ -158,7 +158,7 @@ export default function DashboardLayout({
                       href={href}
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition ${
-                        isActive ? "bg-white/10 text-white" : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                        isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       }`}
                     >
                       <Icon className="h-[18px] w-[18px] shrink-0" />

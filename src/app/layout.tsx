@@ -52,7 +52,7 @@ export default function RootLayout({
             classNames: {
               toast: "font-sans text-[14px]",
               title: "font-medium",
-              description: "text-zinc-500 text-[13px]",
+              description: "text-slate-500 text-[13px]",
               success: "border-l-4 border-l-emerald-500",
               error: "border-l-4 border-l-red-500",
             },
