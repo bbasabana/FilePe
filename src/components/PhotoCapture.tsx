@@ -20,7 +20,6 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Attacher le flux à la vidéo après le rendu (évite l’écran noir avec React)
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !stream) return;
@@ -37,7 +36,6 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
     };
   }, [stream]);
 
-  // Nettoyer la caméra au démontage
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -57,11 +55,7 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
     setLoading(true);
     try {
       const s = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-        },
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false,
       });
       streamRef.current = s;
@@ -69,7 +63,7 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg.includes("Permission") || msg.includes("NotAllowed")
-        ? "Accès à la caméra refusé. Autorisez l’accès dans les paramètres du navigateur."
+        ? "Accès à la caméra refusé. Autorisez l'accès dans les paramètres du navigateur."
         : "Caméra indisponible ou déjà utilisée.");
     } finally {
       setLoading(false);
@@ -94,37 +88,33 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] overflow-hidden">
-      <div className="p-4 border-b border-white/[0.06]">
-        <h3 className="text-[12px] font-semibold text-white uppercase tracking-wider flex items-center gap-2 text-zinc-400">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-slate-200">
+        <h3 className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
           <Camera className="h-4 w-4 text-primary" />
-          Photo d’identité
+          Photo d&apos;identité
         </h3>
       </div>
 
       <div className="p-4 space-y-4">
         {currentPhotoUrl && !stream && !captured && (
           <div className="flex flex-col items-center">
-            <div className="relative rounded-xl overflow-hidden bg-black/40 w-full max-w-[280px] aspect-[3/4] border border-white/10">
-              <img
-                src={currentPhotoUrl}
-                alt="Photo enregistrée"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+            <div className="relative rounded-xl overflow-hidden bg-slate-100 w-full max-w-[280px] aspect-[3/4] border border-slate-200">
+              <img src={currentPhotoUrl} alt="Photo enregistrée" className="absolute inset-0 w-full h-full object-cover" />
             </div>
-            <p className="text-[11px] text-zinc-500 mt-2">Photo enregistrée</p>
+            <p className="text-[11px] text-slate-500 mt-2">Photo enregistrée</p>
           </div>
         )}
 
         {error && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2.5 text-[13px] text-red-400">
+          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-[13px] text-red-600">
             {error}
           </div>
         )}
 
         {stream ? (
           <div className="space-y-4">
-            <div className="relative w-full max-w-md mx-auto rounded-xl overflow-hidden bg-black border border-white/10 shadow-lg">
+            <div className="relative w-full max-w-md mx-auto rounded-xl overflow-hidden bg-black border border-slate-200 shadow-sm">
               <video
                 ref={videoRef}
                 autoPlay
@@ -150,7 +140,7 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
               <button
                 type="button"
                 onClick={stopCamera}
-                className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2.5 text-[13px] font-medium text-zinc-400 hover:bg-white/5 transition"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition"
               >
                 <X className="h-4 w-4" />
                 Fermer la caméra
@@ -158,9 +148,9 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
             </div>
 
             {captured && (
-              <div className="pt-2 border-t border-white/[0.06] space-y-3">
-                <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Aperçu capturé</p>
-                <div className="rounded-xl overflow-hidden bg-black/40 border border-white/10 w-full max-w-[240px] aspect-[3/4]">
+              <div className="pt-2 border-t border-slate-200 space-y-3">
+                <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Aperçu capturé</p>
+                <div className="rounded-xl overflow-hidden bg-slate-100 border border-slate-200 w-full max-w-[240px] aspect-[3/4]">
                   <img src={captured} alt="Capture" className="w-full h-full object-cover" />
                 </div>
                 <button
@@ -177,11 +167,11 @@ export default function PhotoCapture({ currentPhotoUrl, onCapture, onSave, savin
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-              <Video className="h-8 w-8 text-zinc-500" />
+            <div className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
+              <Video className="h-8 w-8 text-slate-400" />
             </div>
-            <p className="text-[13px] text-zinc-400 text-center max-w-[260px]">
-              {loading ? "Activation de la caméra…" : "Ouvrez la caméra pour prendre une photo d’identité."}
+            <p className="text-[13px] text-slate-500 text-center max-w-[260px]">
+              {loading ? "Activation de la caméra…" : "Ouvrez la caméra pour prendre une photo d\u2019identité."}
             </p>
             <button
               type="button"
