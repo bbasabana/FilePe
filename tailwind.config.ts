@@ -10,18 +10,20 @@ const config: Config = {
     extend: {
       colors: {
         surface: {
-          DEFAULT: "#0f0f0f",
-          elevated: "#1a1a1a",
-          overlay: "#262626",
+          // Palette claire inspirée des consoles modernes (type Neon)
+          DEFAULT: "#ffffff",
+          elevated: "#f8fafc",
+          overlay: "#e5e7eb",
         },
         primary: {
-          DEFAULT: "#3b82f6",
-          dim: "#2563eb",
+          // Couleur d’accent principale
+          DEFAULT: "#10b981", // teal/emerald
+          dim: "#059669",
         },
         ink: {
-          primary: "#fafafa",
-          secondary: "#a1a1aa",
-          tertiary: "#71717a",
+          primary: "#0f172a",
+          secondary: "#64748b",
+          tertiary: "#94a3b8",
         },
       },
       fontFamily: {
