@@ -8,7 +8,7 @@ import { Pencil, X, Check, GraduationCap, FileDown, Download, Paperclip, Trash2 
 import { generateDossierPdf } from "@/lib/generate-dossier-pdf";
 import QrDossier from "@/components/QrDossier";
 import PhotoCapture from "@/components/PhotoCapture";
-import EmpreintesSimulation from "@/components/EmpreintesSimulation";
+import EmpreintesCapture from "@/components/EmpreintesCapture";
 
 interface FormationItem {
   id: string;
@@ -794,7 +794,7 @@ export default function DossierDetailPage() {
               onSave={persistPhoto}
               saving={photoSaving}
             />
-            <EmpreintesSimulation
+            <EmpreintesCapture
               currentJson={data.detenu.empreintes ?? null}
               onSave={persistEmpreintes}
               saving={empreintesSaving}

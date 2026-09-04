@@ -89,7 +89,7 @@ export const detenus = pgTable("detenus", {
   etatCivil: etatCivilEnum("etat_civil"),
   status: statusDetenuEnum("status"),
   photoUrl: text("photo_url"), // base64 ou URL après capture webcam
-  empreintes: text("empreintes"), // JSON: { pouces: [], doigts: [] } simulés
+  empreintes: text("empreintes"), // JSON v2: { version:2, hand, fingers[{fingerId,samples,templateMerged}] }
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

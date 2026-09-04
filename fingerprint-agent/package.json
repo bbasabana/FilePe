@@ -1,0 +1,14 @@
+{
+  "name": "filepe-fingerprint-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent local WebSocket pour ZKTeco Live20R (FilePe)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "start:mock": "FILEPE_FP_MODE=mock node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

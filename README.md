@@ -19,6 +19,19 @@ SEED_EMAIL=admin@makala.cd SEED_PASSWORD=admin123 SEED_ROLE=admin npm run seed
 npm run dev
 ```
 
+## Empreintes (Live20R)
+
+L’app web (Vercel) ne parle pas directement au USB. Sur chaque poste d’enrôlement :
+
+1. Brancher le **ZKTeco Live20R**
+2. Lancer l’agent local : voir [`fingerprint-agent/README.md`](fingerprint-agent/README.md)
+3. Ouvrir la fiche prévenu/détenu → **Empreintes digitales** (5 doigts × 3 prises)
+
+```bash
+cd fingerprint-agent && npm install && npm run start:mock   # test sans lecteur
+# ou FILEPE_FP_MODE=hardware npm start                     # Live20R réel (Windows)
+```
+
 ## Scripts
 
 - `npm run dev` — serveur de développement

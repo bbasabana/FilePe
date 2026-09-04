@@ -16,7 +16,8 @@
     "db:migrate-pdf-downloads": "tsx scripts/migrate-pdf-downloads.ts",
     "db:migrate-users-blocked": "tsx scripts/migrate-users-blocked.ts",
     "db:migrate-piece-jointes": "tsx scripts/migrate-piece-jointes.ts",
-    "seed": "tsx scripts/seed-user.ts"
+    "seed": "tsx scripts/seed-user.ts",
+    "fingerprint-agent": "npm --prefix fingerprint-agent run start:mock"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.0",
