@@ -541,7 +541,7 @@ export default function NouveauDossierPage() {
               </div>
             </div>
             <div>
-              <label className={labelClass}>Juridiction bas parquet</label>
+              <label className={labelClass}>Parquet</label>
               <input
                 type="text"
                 value={juridictionBasParquet}

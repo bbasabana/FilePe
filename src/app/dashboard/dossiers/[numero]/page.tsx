@@ -755,7 +755,7 @@ export default function DossierDetailPage() {
                   <div><label className={labelClass}>N° dossier</label><input value={form.numeroDossier ?? ""} onChange={(e) => setForm((f) => ({ ...f, numeroDossier: e.target.value }))} className={`${inputClass} font-mono`} /></div>
                   <div><label className={labelClass}>Date entrée</label><input type="date" value={form.dateEntree ?? ""} onChange={(e) => setForm((f) => ({ ...f, dateEntree: e.target.value }))} className={inputClass} /></div>
                 </div>
-                <div><label className={labelClass}>Juridiction bas parquet</label><input value={form.juridictionBasParquet ?? ""} onChange={(e) => setForm((f) => ({ ...f, juridictionBasParquet: e.target.value }))} className={inputClass} /></div>
+                <div><label className={labelClass}>Parquet</label><input value={form.juridictionBasParquet ?? ""} onChange={(e) => setForm((f) => ({ ...f, juridictionBasParquet: e.target.value }))} className={inputClass} /></div>
               </div>
             ) : (
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
@@ -763,7 +763,7 @@ export default function DossierDetailPage() {
                 <><dt className="text-slate-400">Date entrée</dt><dd className="text-slate-900">{data.dateEntree}</dd></>
                 <><dt className="text-slate-400">Juridiction près</dt><dd className="text-slate-900">{data.juridictionNom ? `${data.juridictionNom} près` : "—"}</dd></>
                 <><dt className="text-slate-400">Parquet</dt><dd className="text-slate-900">{data.parquetNom ? `${data.parquetNom} près` : "—"}</dd></>
-                <><dt className="text-slate-400">J. bas parquet</dt><dd className="text-slate-900 col-span-2">{data.juridictionBasParquet ?? "—"}</dd></>
+                <><dt className="text-slate-400">Parquet</dt><dd className="text-slate-900 col-span-2">{data.juridictionBasParquet ?? "—"}</dd></>
               </dl>
             )}
           </section>

@@ -170,7 +170,7 @@ export async function generateDossierPdf(data: DossierForPdf, options: GenerateP
   lineLabel("Date d'entrée :", data.dateEntree);
   lineLabel("Juridiction :", data.juridictionNom ? `${data.juridictionNom} près` : "—");
   lineLabel("Parquet :", data.parquetNom ? `${data.parquetNom} près` : "—");
-  lineLabel("J. bas parquet :", data.juridictionBasParquet ?? "—");
+  lineLabel("Parquet :", data.juridictionBasParquet ?? "—");
   y += 3;
 
   sectionTitle("III — PRÉVENTION (MOTIF DE DÉTENTION)");
