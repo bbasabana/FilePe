@@ -33,7 +33,7 @@ export interface EmpreintesData {
   version: typeof EMPREINTES_VERSION;
   hand: HandId;
   device?: string | null;
-  mode?: "hardware" | "mock" | null;
+  mode?: "hardware" | "mock" | "demo" | null;
   enrolledAt?: string | null;
   fingers: FingerEnrollment[];
 }

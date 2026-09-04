@@ -3,18 +3,53 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FilePlus, Search, ChevronRight, FileText } from "lucide-react";
-import PageHero from "@/components/PageHero";
+import { UserPlus, Search, ChevronRight, UserCheck, UserX, type LucideIcon } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
-interface DossierRow {
+interface Row {
   numeroDossier: string;
   dateEntree: string;
-  prevention: string | null;
   nom: string | null;
   prenom: string | null;
 }
+
+type StatusKind = "prevenu" | "detenu";
+
+const config: Record<
+  StatusKind,
+  {
+    title: string;
+    subtitle: string;
+    createHref: string;
+    createLabel: string;
+    emptyLabel: string;
+    countLabel: (n: number) => string;
+    icon: LucideIcon;
+    accent: string;
+  }
+> = {
+  prevenu: {
+    title: "Prévenus",
+    subtitle: "Liste, recherche et fiches des dossiers prévenus.",
+    createHref: "/dashboard/dossiers/nouveau?type=prevenu",
+    createLabel: "Nouveau prévenu",
+    emptyLabel: "Aucun prévenu enregistré",
+    countLabel: (n) => `${n} prévenu${n !== 1 ? "s" : ""}`,
+    icon: UserCheck,
+    accent: "from-sky-500/15 to-transparent",
+  },
+  detenu: {
+    title: "Détenus",
+    subtitle: "Liste, recherche et fiches des dossiers détenus.",
+    createHref: "/dashboard/dossiers/nouveau?type=detenu",
+    createLabel: "Nouveau détenu",
+    emptyLabel: "Aucun détenu enregistré",
+    countLabel: (n) => `${n} détenu${n !== 1 ? "s" : ""}`,
+    icon: UserX,
+    accent: "from-amber-400/20 to-transparent",
+  },
+};
 
 function formatDate(value: string) {
   if (!value) return "—";
@@ -27,9 +62,11 @@ function formatDate(value: string) {
   });
 }
 
-export default function DossiersPage() {
+export default function DossiersStatusList({ status }: { status: StatusKind }) {
+  const cfg = config[status];
+  const Icon = cfg.icon;
   const router = useRouter();
-  const [list, setList] = useState<DossierRow[]>([]);
+  const [list, setList] = useState<Row[]>([]);
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -39,24 +76,22 @@ export default function DossiersPage() {
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
+    params.set("status", status);
     if (q) params.set("q", q);
     params.set("page", String(page));
     params.set("limit", String(PAGE_SIZE));
     fetch(`/api/dossiers?${params}`, { credentials: "include" })
       .then((res) => {
-        if (res.status === 401) {
-          router.replace("/login");
-          return;
-        }
+        if (res.status === 401) router.replace("/login");
         return res.json();
       })
-      .then((data: { list?: DossierRow[]; total?: number } | undefined) => {
+      .then((data: { list?: Row[]; total?: number }) => {
         if (data?.list) setList(data.list);
         if (typeof data?.total === "number") setTotal(data.total);
       })
       .catch(() => setList([]))
       .finally(() => setLoading(false));
-  }, [q, page, router]);
+  }, [q, page, router, status]);
 
   function runSearch() {
     setPage(1);
@@ -67,21 +102,39 @@ export default function DossiersPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl animate-fade-in">
-      <PageHero
-        title="Tous les dossiers"
-        subtitle="Liste complète — recherche, fiches prévenus et détenus."
-        icon={FileText}
-        action={
+      {/* En-tête */}
+      <div
+        className="relative mb-6 overflow-hidden rounded-2xl px-5 py-5 sm:px-7 sm:py-6 text-white"
+        style={{
+          background:
+            "linear-gradient(135deg, #0b1f4a 0%, #123a7a 55%, #0c4a6e 100%)",
+        }}
+      >
+        <div
+          className={`pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l ${cfg.accent}`}
+          aria-hidden
+        />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3.5 min-w-0">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
+              <Icon className="h-5 w-5 text-amber-300" strokeWidth={1.75} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-[1.35rem] font-semibold tracking-tight">{cfg.title}</h1>
+              <p className="mt-1 text-[13px] text-sky-100/75">{cfg.subtitle}</p>
+            </div>
+          </div>
           <Link
-            href="/dashboard/dossiers/nouveau"
+            href={cfg.createHref}
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-[13px] font-semibold text-slate-900 shadow-lg shadow-amber-500/20 transition hover:bg-amber-300"
           >
-            <FilePlus className="h-4 w-4" strokeWidth={2} />
-            Nouveau dossier
+            <UserPlus className="h-4 w-4" strokeWidth={2} />
+            {cfg.createLabel}
           </Link>
-        }
-      />
+        </div>
+      </div>
 
+      {/* Recherche */}
       <div className="mb-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -103,6 +156,7 @@ export default function DossiersPage() {
         </button>
       </div>
 
+      {/* Liste */}
       <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-200/40">
         {loading ? (
           <div className="space-y-3 p-5">
@@ -113,21 +167,23 @@ export default function DossiersPage() {
         ) : list.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-14 text-center">
             <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-              <FileText className="h-5 w-5" />
+              <Icon className="h-5 w-5" />
             </span>
-            <p className="text-[14px] font-medium text-slate-700">Aucun dossier</p>
-            <p className="mt-1 text-[13px] text-slate-500">Créez un dossier pour commencer.</p>
+            <p className="text-[14px] font-medium text-slate-700">{cfg.emptyLabel}</p>
+            <p className="mt-1 text-[13px] text-slate-500">
+              Commencez par créer un nouveau dossier.
+            </p>
             <Link
-              href="/dashboard/dossiers/nouveau"
+              href={cfg.createHref}
               className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0b1f4a] px-4 py-2.5 text-[13px] font-medium text-white hover:bg-[#123a7a]"
             >
-              <FilePlus className="h-4 w-4" />
-              Nouveau dossier
+              <UserPlus className="h-4 w-4" />
+              {cfg.createLabel}
             </Link>
           </div>
         ) : (
           <>
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/80">
@@ -140,9 +196,6 @@ export default function DossiersPage() {
                     <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                       Entrée
                     </th>
-                    <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                      Prévention
-                    </th>
                     <th className="w-12 px-3 py-3" aria-hidden />
                   </tr>
                 </thead>
@@ -152,8 +205,10 @@ export default function DossiersPage() {
                       key={row.numeroDossier}
                       className="border-b border-slate-100 last:border-0 transition hover:bg-slate-50/80"
                     >
-                      <td className="px-5 py-3.5 text-[14px] font-medium text-slate-900">
-                        {[row.nom, row.prenom].filter(Boolean).join(" ") || "—"}
+                      <td className="px-5 py-3.5">
+                        <p className="text-[14px] font-medium text-slate-900">
+                          {[row.nom, row.prenom].filter(Boolean).join(" ") || "—"}
+                        </p>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[12px] text-slate-700">
@@ -163,14 +218,11 @@ export default function DossiersPage() {
                       <td className="px-5 py-3.5 text-[13px] text-slate-500">
                         {formatDate(row.dateEntree)}
                       </td>
-                      <td className="max-w-[220px] truncate px-5 py-3.5 text-[13px] text-slate-500">
-                        {row.prevention || "—"}
-                      </td>
                       <td className="px-3 py-3.5">
                         <Link
                           href={`/dashboard/dossiers/${encodeURIComponent(row.numeroDossier)}`}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-[#0b1f4a]/5 hover:text-[#0b1f4a]"
-                          aria-label="Voir le dossier"
+                          aria-label="Voir la fiche"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Link>
@@ -181,7 +233,8 @@ export default function DossiersPage() {
               </table>
             </div>
 
-            <ul className="divide-y divide-slate-100 md:hidden">
+            {/* Mobile cards */}
+            <ul className="divide-y divide-slate-100 sm:hidden">
               {list.map((row) => (
                 <li key={row.numeroDossier}>
                   <Link
@@ -192,12 +245,9 @@ export default function DossiersPage() {
                       <p className="truncate text-[14px] font-medium text-slate-900">
                         {[row.nom, row.prenom].filter(Boolean).join(" ") || "—"}
                       </p>
-                      <p className="mt-0.5 truncate font-mono text-[11px] text-slate-500">
+                      <p className="mt-0.5 font-mono text-[11px] text-slate-500">
                         {row.numeroDossier} · {formatDate(row.dateEntree)}
                       </p>
-                      {row.prevention && (
-                        <p className="mt-1 truncate text-[12px] text-slate-400">{row.prevention}</p>
-                      )}
                     </div>
                     <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
                   </Link>
@@ -206,9 +256,7 @@ export default function DossiersPage() {
             </ul>
 
             <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 sm:px-5">
-              <span className="text-[12px] text-slate-500">
-                {total} dossier{total !== 1 ? "s" : ""}
-              </span>
+              <span className="text-[12px] text-slate-500">{cfg.countLabel(total)}</span>
               {totalPages > 1 && (
                 <div className="flex items-center gap-1.5">
                   <button

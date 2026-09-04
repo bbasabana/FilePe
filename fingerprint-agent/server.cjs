@@ -1,34 +1,29 @@
 /**
  * Agent local FilePe ↔ ZKTeco Live20R
+ * Protocole WebSocket : ws://127.0.0.1:8765
  *
- * Protocole WebSocket JSON sur ws://127.0.0.1:8765
- * Modes :
- *   FILEPE_FP_MODE=mock      → simulation (défaut hors Windows / sans SDK)
- *   FILEPE_FP_MODE=hardware  → appelle fingerprint-agent/hardware.py (pyzkfp)
- *
- * Messages client → agent :
- *   { type: "status"|"capture"|"merge"|"ping", requestId, templates? }
- * Réponses :
- *   { type: "status"|"capture_ok"|"merge_ok"|"pong"|..._error, requestId?, ... }
+ * FILEPE_FP_MODE=hardware → hardware.py (SDK ZKFinger)
+ * FILEPE_FP_MODE=mock     → simulation
  */
 
-import { createServer } from "node:http";
-import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-import { WebSocketServer } from "ws";
-import { createHash, randomBytes } from "node:crypto";
+const { createServer } = require("node:http");
+const { spawn } = require("node:child_process");
+const { join, dirname } = require("node:path");
+const { createHash, randomBytes } = require("node:crypto");
+const { existsSync } = require("node:fs");
+const { WebSocketServer } = require("ws");
 
 const PORT = Number(process.env.FILEPE_FP_PORT || 8765);
 const HOST = process.env.FILEPE_FP_HOST || "127.0.0.1";
-const MODE = (process.env.FILEPE_FP_MODE || "mock").toLowerCase();
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const MODE = (process.env.FILEPE_FP_MODE || "hardware").toLowerCase();
+
+/** Dossier de l’exe (pkg) ou du script */
+const APP_DIR = process.pkg ? dirname(process.execPath) : __dirname;
 
 function send(ws, payload) {
   if (ws.readyState === 1) ws.send(JSON.stringify(payload));
 }
 
-/** Image PNG factice (empreinte simulée) */
 function mockImageBase64() {
   return (
     "data:image/png;base64," +
@@ -46,12 +41,25 @@ function mockMerge(templates) {
   return h.digest("base64");
 }
 
+function pythonCmd() {
+  if (process.env.FILEPE_FP_PYTHON) return process.env.FILEPE_FP_PYTHON;
+  const embed = join(APP_DIR, "python", "python.exe");
+  if (existsSync(embed)) return embed;
+  return process.platform === "win32" ? "py" : "python3";
+}
+
 function runPython(args, input) {
   return new Promise((resolve, reject) => {
-    const script = join(__dirname, "hardware.py");
-    const child = spawn("python", [script, ...args], {
+    const script = join(APP_DIR, "hardware.py");
+    if (!existsSync(script)) {
+      reject(new Error("hardware.py introuvable à côté de l’agent."));
+      return;
+    }
+    const child = spawn(pythonCmd(), [script, ...args], {
       stdio: ["pipe", "pipe", "pipe"],
       env: process.env,
+      cwd: APP_DIR,
+      shell: process.platform === "win32",
     });
     let out = "";
     let err = "";
@@ -115,8 +123,7 @@ async function handleCapture() {
       templateBase64: res.templateBase64,
     };
   }
-  // Simule le délai de pose du doigt
-  await new Promise((r) => setTimeout(r, 600));
+  await new Promise((r) => setTimeout(r, 400));
   return {
     type: "capture_ok",
     imageBase64: mockImageBase64(),
@@ -187,5 +194,6 @@ wss.on("connection", (ws) => {
 
 httpServer.listen(PORT, HOST, () => {
   console.log(`FilePe Fingerprint Agent — ws://${HOST}:${PORT}  mode=${MODE}`);
-  console.log("Branchez le Live20R puis ouvrez FilePe dans Chrome/Edge.");
+  console.log(`Dossier agent: ${APP_DIR}`);
+  console.log("Ouvrez https://file-pe.vercel.app/ dans Chrome (même PC).");
 });

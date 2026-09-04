@@ -1,0 +1,35 @@
+name: Build Fingerprint Agent (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "fingerprint-agent/**"
+    branches: [main]
+
+jobs:
+  build-windows-agent:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: fingerprint-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - run: npm install
+      - run: npx pkg server.cjs --targets node18-win-x64 --output dist/FilePeFingerprintAgent.exe
+      - name: Pack release folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item dist/FilePeFingerprintAgent.exe release/
+          Copy-Item hardware.py release/
+          Copy-Item Demarrer-Agent.bat release/
+          Copy-Item INSTALL-WINDOWS.md release/
+          Copy-Item README.md release/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FilePe-Fingerprint-Agent-Windows
+          path: fingerprint-agent/release/*

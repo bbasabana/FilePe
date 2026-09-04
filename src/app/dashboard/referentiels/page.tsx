@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil, Trash2, Check, X } from "lucide-react";
+import { Pencil, Trash2, Check, X, Settings, Plus } from "lucide-react";
 import { CIRCONSCRIPTIONS_RDC } from "@/lib/circonscriptions-rdc";
+import PageHero from "@/components/PageHero";
 
 interface Juridiction {
   id: string;
@@ -20,12 +21,18 @@ interface Parquet {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary";
-const labelClass = "block text-[12px] font-medium text-slate-500 mb-1.5";
+  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#123a7a]/40 focus:ring-2 focus:ring-[#123a7a]/10";
+const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400";
 
-const btnIcon = "h-4 w-4";
-const btnBase =
-  "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium transition";
+const btnIcon = "h-3.5 w-3.5";
+const btnGhost =
+  "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium text-slate-600 transition hover:bg-slate-50";
+const btnPrimary =
+  "inline-flex items-center gap-1.5 rounded-xl bg-[#0b1f4a] px-4 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#123a7a] disabled:opacity-50";
+const btnAmber =
+  "inline-flex items-center gap-1.5 rounded-xl bg-amber-400 px-4 py-2.5 text-[13px] font-semibold text-slate-900 transition hover:bg-amber-300 disabled:opacity-50";
+const btnDanger =
+  "inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-2.5 py-1.5 text-[12px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50";
 
 export default function ReferentielsPage() {
   const router = useRouter();
@@ -305,25 +312,25 @@ export default function ReferentielsPage() {
   }
 
   return (
-    <div className="max-w-3xl w-full animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-[22px] font-semibold text-slate-900 tracking-tight">
-          Juridictions & Parquets
-        </h1>
-        <p className="text-slate-500 mt-1 text-[14px]">
-          Gérer les valeurs des listes déroulantes utilisées dans les dossiers.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl animate-fade-in">
+      <PageHero
+        title="Référentiels"
+        subtitle="Juridictions et parquets utilisés dans les dossiers."
+        icon={Settings}
+        accent="from-sky-400/15 to-transparent"
+      />
 
-      <div className="space-y-8">
+      <div className="space-y-5">
         {/* Juridictions près */}
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="text-[15px] font-semibold text-slate-900 mb-4">Juridictions près</h2>
+        <section className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+          <h2 className="mb-4 text-[15px] font-semibold text-slate-900">Juridictions près</h2>
           {juridictionError && (
-            <p className="mb-4 text-[13px] text-red-400">{juridictionError}</p>
+            <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-600">
+              {juridictionError}
+            </p>
           )}
-          <form onSubmit={addJuridiction} className="flex flex-wrap items-end gap-4 mb-6">
-            <div className="flex-1 min-w-[180px]">
+          <form onSubmit={addJuridiction} className="mb-5 flex flex-wrap items-end gap-3">
+            <div className="min-w-[180px] flex-1">
               <label className={labelClass}>Juridiction près (nom) *</label>
               <input
                 type="text"
@@ -344,21 +351,24 @@ export default function ReferentielsPage() {
                 placeholder="Optionnel"
               />
             </div>
-            <button
-              type="submit"
-              disabled={juridictionSubmitting}
-              className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50"
-            >
+            <button type="submit" disabled={juridictionSubmitting} className={btnAmber}>
+              <Plus className={btnIcon} />
               {juridictionSubmitting ? "Ajout…" : "Ajouter"}
             </button>
           </form>
           {loadingJ ? (
-            <p className="text-[13px] text-slate-400">Chargement…</p>
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-100" />
+              ))}
+            </div>
           ) : juridictions.length === 0 ? (
-            <p className="text-[14px] text-slate-400">Aucune juridiction. Ajoutez-en une ci-dessus.</p>
+            <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-[13px] text-slate-500">
+              Aucune juridiction. Ajoutez-en une ci-dessus.
+            </p>
           ) : (
-            <div className="rounded-lg border border-slate-300 bg-white overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 text-[12px] font-medium text-slate-400 uppercase tracking-wider border-b border-slate-200">
+            <div className="overflow-hidden rounded-xl border border-slate-100">
+              <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b border-slate-100 bg-slate-50/80 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 sm:grid-cols-[1fr_100px_180px]">
                 <div>Juridiction près</div>
                 <div>Code</div>
                 <div className="text-right">Actions</div>
@@ -366,7 +376,7 @@ export default function ReferentielsPage() {
               {juridictions.map((j) => (
                 <div
                   key={j.id}
-                  className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_100px_180px] gap-2 px-4 py-3 items-center border-b border-slate-200 last:border-0 text-[14px]"
+                  className="grid grid-cols-[1fr_auto_auto] items-center gap-2 border-b border-slate-100 px-4 py-3 text-[14px] last:border-0 sm:grid-cols-[1fr_100px_180px]"
                 >
                   {editingJuridictionId === j.id ? (
                     <>
@@ -389,31 +399,30 @@ export default function ReferentielsPage() {
                           type="button"
                           onClick={() => saveJuridiction(j.id)}
                           disabled={!editJNom.trim() || savingJId === j.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50"
+                          className={btnPrimary}
                         >
                           <Check className={btnIcon} />
-                          Enregistrer
+                          OK
                         </button>
                         <button
                           type="button"
                           onClick={cancelEditJuridiction}
                           disabled={savingJId === j.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-500 hover:bg-slate-50"
+                          className={btnGhost}
                         >
                           <X className={btnIcon} />
-                          Annuler
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="font-medium text-slate-900">{j.nom} près</div>
-                      <div className="text-slate-500 font-mono text-[13px]">{j.code ?? "—"}</div>
+                      <div className="font-mono text-[13px] text-slate-500">{j.code ?? "—"}</div>
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => startEditJuridiction(j)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                          className={btnGhost}
                         >
                           <Pencil className={btnIcon} />
                           Modifier
@@ -422,10 +431,9 @@ export default function ReferentielsPage() {
                           type="button"
                           onClick={() => deleteJuridiction(j.id)}
                           disabled={deletingJId === j.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 px-3 py-2 text-[13px] font-medium text-red-400 hover:bg-red-500/15 disabled:opacity-50"
+                          className={btnDanger}
                         >
                           <Trash2 className={btnIcon} />
-                          Supprimer
                         </button>
                       </div>
                     </>
@@ -437,13 +445,15 @@ export default function ReferentielsPage() {
         </section>
 
         {/* Parquets */}
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="text-[15px] font-semibold text-slate-900 mb-4">Parquets</h2>
+        <section className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+          <h2 className="mb-4 text-[15px] font-semibold text-slate-900">Parquets</h2>
           {parquetError && (
-            <p className="mb-4 text-[13px] text-red-400">{parquetError}</p>
+            <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-600">
+              {parquetError}
+            </p>
           )}
-          <form onSubmit={addParquet} className="space-y-4 mb-6">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form onSubmit={addParquet} className="mb-5 space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>Nom (Parquet … près) *</label>
                 <input
@@ -466,7 +476,7 @@ export default function ReferentielsPage() {
                 />
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="min-w-[200px]">
                 <label className={labelClass}>Juridiction près</label>
                 <select
@@ -476,7 +486,9 @@ export default function ReferentielsPage() {
                 >
                   <option value="">— Aucune —</option>
                   {juridictions.map((j) => (
-                    <option key={j.id} value={j.id}>{j.nom} près</option>
+                    <option key={j.id} value={j.id}>
+                      {j.nom} près
+                    </option>
                   ))}
                 </select>
               </div>
@@ -489,127 +501,139 @@ export default function ReferentielsPage() {
                 >
                   <option value="">— Aucune —</option>
                   {CIRCONSCRIPTIONS_RDC.map((ville) => (
-                    <option key={ville} value={ville}>{ville}</option>
+                    <option key={ville} value={ville}>
+                      {ville}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
-            <div className="flex flex-wrap items-end gap-4">
-              <button
-                type="submit"
-                disabled={parquetSubmitting}
-                className="rounded-lg bg-primary px-4 py-2.5 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50"
-              >
-                {parquetSubmitting ? "Ajout…" : "Ajouter"}
-              </button>
-            </div>
+            <button type="submit" disabled={parquetSubmitting} className={btnAmber}>
+              <Plus className={btnIcon} />
+              {parquetSubmitting ? "Ajout…" : "Ajouter"}
+            </button>
           </form>
           {loadingP ? (
-            <p className="text-[13px] text-slate-400">Chargement…</p>
-          ) : parquets.length === 0 ? (
-            <p className="text-[14px] text-slate-400">Aucun parquet. Ajoutez-en un ci-dessus.</p>
-          ) : (
-            <div className="rounded-lg border border-slate-300 bg-white overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 text-[12px] font-medium text-slate-400 uppercase tracking-wider border-b border-slate-200">
-                <div>Parquet près</div>
-                <div>Code</div>
-                <div>Juridiction près</div>
-                <div>Circonscription</div>
-                <div className="text-right">Actions</div>
-              </div>
-              {parquets.map((p) => (
-                <div
-                  key={p.id}
-                  className="grid grid-cols-[1fr_auto_1fr_1fr_auto] sm:grid-cols-[1fr_80px_1fr_120px_200px] gap-2 px-4 py-3 items-center border-b border-slate-200 last:border-0 text-[14px]"
-                >
-                  {editingParquetId === p.id ? (
-                    <>
-                      <input
-                        type="text"
-                        value={editPNom}
-                        onChange={(e) => setEditPNom(e.target.value)}
-                        className={`${inputClass} py-2 text-[14px]`}
-                        placeholder="Nom"
-                      />
-                      <input
-                        type="text"
-                        value={editPCode}
-                        onChange={(e) => setEditPCode(e.target.value)}
-                        className={`${inputClass} w-full min-w-[80px] py-2 text-[14px]`}
-                        placeholder="Code"
-                      />
-                      <select
-                        value={editPJuridictionId}
-                        onChange={(e) => setEditPJuridictionId(e.target.value)}
-                        className={`${inputClass} py-2 text-[14px]`}
-                      >
-                        <option value="">— Aucune —</option>
-                        {juridictions.map((j) => (
-                          <option key={j.id} value={j.id}>{j.nom} près</option>
-                        ))}
-                      </select>
-                      <select
-                        value={editPCirconscription}
-                        onChange={(e) => setEditPCirconscription(e.target.value)}
-                        className={`${inputClass} py-2 text-[14px]`}
-                      >
-                        <option value="">—</option>
-                        {CIRCONSCRIPTIONS_RDC.map((ville) => (
-                          <option key={ville} value={ville}>{ville}</option>
-                        ))}
-                      </select>
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => saveParquet(p.id)}
-                          disabled={!editPNom.trim() || savingPId === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50"
-                        >
-                          <Check className={btnIcon} />
-                          Enregistrer
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEditParquet}
-                          disabled={savingPId === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-500 hover:bg-slate-50"
-                        >
-                          <X className={btnIcon} />
-                          Annuler
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="font-medium text-slate-900">{p.nom} près</div>
-                      <div className="text-slate-500 font-mono text-[13px]">{p.code ?? "—"}</div>
-                      <div className="text-slate-500 text-[13px]">
-                        {p.juridictionId ? (juridictions.find((j) => j.id === p.juridictionId)?.nom ?? "—") + " près" : "—"}
-                      </div>
-                      <div className="text-slate-500 text-[13px]">{p.circonscription ?? "—"}</div>
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => startEditParquet(p)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                        >
-                          <Pencil className={btnIcon} />
-                          Modifier
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteParquet(p.id)}
-                          disabled={deletingPId === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 px-3 py-2 text-[13px] font-medium text-red-400 hover:bg-red-500/15 disabled:opacity-50"
-                        >
-                          <Trash2 className={btnIcon} />
-                          Supprimer
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-100" />
               ))}
+            </div>
+          ) : parquets.length === 0 ? (
+            <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-[13px] text-slate-500">
+              Aucun parquet. Ajoutez-en un ci-dessus.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-100">
+              <div className="min-w-[720px]">
+                <div className="grid grid-cols-[1fr_80px_1fr_120px_160px] gap-2 border-b border-slate-100 bg-slate-50/80 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div>Parquet près</div>
+                  <div>Code</div>
+                  <div>Juridiction</div>
+                  <div>Circonscription</div>
+                  <div className="text-right">Actions</div>
+                </div>
+                {parquets.map((p) => (
+                  <div
+                    key={p.id}
+                    className="grid grid-cols-[1fr_80px_1fr_120px_160px] items-center gap-2 border-b border-slate-100 px-4 py-3 text-[14px] last:border-0"
+                  >
+                    {editingParquetId === p.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editPNom}
+                          onChange={(e) => setEditPNom(e.target.value)}
+                          className={`${inputClass} py-2 text-[14px]`}
+                          placeholder="Nom"
+                        />
+                        <input
+                          type="text"
+                          value={editPCode}
+                          onChange={(e) => setEditPCode(e.target.value)}
+                          className={`${inputClass} py-2 text-[14px]`}
+                          placeholder="Code"
+                        />
+                        <select
+                          value={editPJuridictionId}
+                          onChange={(e) => setEditPJuridictionId(e.target.value)}
+                          className={`${inputClass} py-2 text-[14px]`}
+                        >
+                          <option value="">— Aucune —</option>
+                          {juridictions.map((j) => (
+                            <option key={j.id} value={j.id}>
+                              {j.nom} près
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={editPCirconscription}
+                          onChange={(e) => setEditPCirconscription(e.target.value)}
+                          className={`${inputClass} py-2 text-[14px]`}
+                        >
+                          <option value="">—</option>
+                          {CIRCONSCRIPTIONS_RDC.map((ville) => (
+                            <option key={ville} value={ville}>
+                              {ville}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveParquet(p.id)}
+                            disabled={!editPNom.trim() || savingPId === p.id}
+                            className={btnPrimary}
+                          >
+                            <Check className={btnIcon} />
+                            OK
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditParquet}
+                            disabled={savingPId === p.id}
+                            className={btnGhost}
+                          >
+                            <X className={btnIcon} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-medium text-slate-900">{p.nom} près</div>
+                        <div className="font-mono text-[13px] text-slate-500">{p.code ?? "—"}</div>
+                        <div className="text-[13px] text-slate-500">
+                          {p.juridictionId
+                            ? (juridictions.find((j) => j.id === p.juridictionId)?.nom ?? "—") +
+                              " près"
+                            : "—"}
+                        </div>
+                        <div className="text-[13px] text-slate-500">
+                          {p.circonscription ?? "—"}
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEditParquet(p)}
+                            className={btnGhost}
+                          >
+                            <Pencil className={btnIcon} />
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteParquet(p.id)}
+                            disabled={deletingPId === p.id}
+                            className={btnDanger}
+                          >
+                            <Trash2 className={btnIcon} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </section>

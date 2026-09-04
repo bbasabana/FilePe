@@ -1,51 +1,30 @@
 # Agent local FilePe — ZKTeco Live20R
 
-Le navigateur (même sur Vercel) **ne peut pas** parler au câble USB.
-Sur **chaque PC** où on branche le Live20R, on installe cet agent + les drivers ZKTeco.
-FilePe en ligne ↔ navigateur ↔ **agent local** ↔ Live20R USB.
+Le site https://file-pe.vercel.app/ ne parle **pas** au USB.
+Sur le PC où le Live20R est branché, on lance cet **agent** (pont local).
 
-**OS supportés par ZKTeco pour le Live20R : Windows, Linux, Android — pas macOS.**
+## Pour l’opérateur Windows (objectif simple)
 
-## Installation poste d’enrôlement (Windows)
+1. Installer **ZKFinger SDK** (driver) — une fois  
+   https://www.zkteco.com/en/Biometrics_Module_SDK
+2. Télécharger le dossier Agent (Release / artifact CI)  
+3. Double-clic **`Demarrer-Agent.bat`**
+4. Chrome → https://file-pe.vercel.app/ → empreintes
 
-### A. Une seule fois par machine
+Voir [INSTALL-WINDOWS.md](./INSTALL-WINDOWS.md).
 
-1. Télécharger et installer **ZKFinger SDK for Windows**  
-   https://www.zkteco.com/en/Biometrics_Module_SDK  
-   (ça installe le **driver USB** du Live20R)
-2. Installer **Node.js** LTS : https://nodejs.org  
-3. Installer **Python 3** : https://www.python.org  
-4. Dans un terminal :
+**Pas besoin** de développer sur Windows. Le Mac suffit pour le code FilePe.
+
+## Dev / test sans exe
 
 ```bat
-pip install pyzkfp pillow
-cd chemin\vers\FilePe\fingerprint-agent
 npm install
-```
-
-### B. À chaque session d’enrôlement
-
-1. Brancher le **Live20R** en USB
-2. Lancer l’agent :
-
-```bat
-cd chemin\vers\FilePe\fingerprint-agent
 set FILEPE_FP_MODE=hardware
 npm start
 ```
 
-Laisser cette fenêtre ouverte. Message attendu : `mode=hardware` et lecteur détecté.
+Build exe (sur Windows ou via GitHub Actions) :
 
-3. Ouvrir FilePe (**lien Vercel** ou localhost) dans **Chrome** ou **Edge**
-4. Fiche prévenu / détenu → Empreintes → Capturer (vrai doigt sur le lecteur)
-
-## Vercel
-
-Rien à installer sur Vercel pour le fingerprint.  
-L’app cloud envoie/reçoit les empreintes ; le lecteur reste sur le PC local via l’agent.
-
-## macOS
-
-ZKTeco ne fournit **pas** de SDK/driver Live20R pour Mac.  
-Brancher le lecteur sur un MacBook **ne permet pas** la capture réelle.  
-Pour tester le vrai matériel : PC **Windows** (ou Linux avec SDK Linux).
+```bat
+npm run build:exe
+```

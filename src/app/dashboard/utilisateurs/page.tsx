@@ -14,6 +14,7 @@ import {
   X,
   UserCircle,
 } from "lucide-react";
+import PageHero from "@/components/PageHero";
 
 interface UserRow {
   id: string;
@@ -22,6 +23,10 @@ interface UserRow {
   blocked: boolean;
   createdAt: string;
 }
+
+const fieldClass =
+  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#123a7a]/40 focus:ring-2 focus:ring-[#123a7a]/10";
+const labelClass = "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-400";
 
 export default function UtilisateursPage() {
   const router = useRouter();
@@ -68,10 +73,10 @@ export default function UtilisateursPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[200px]">
+      <div className="flex min-h-[200px] items-center justify-center">
         <div className="flex gap-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-2 w-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
+            <div key={i} className="loader-dot h-2 w-2 rounded-full bg-amber-400" aria-hidden />
           ))}
         </div>
       </div>
@@ -80,12 +85,12 @@ export default function UtilisateursPage() {
 
   if (currentUser?.role !== "admin") {
     return (
-      <div className="max-w-md mx-auto py-12 text-center">
-        <p className="text-slate-500 text-sm">Accès réservé aux administrateurs.</p>
+      <div className="mx-auto max-w-md py-12 text-center">
+        <p className="text-sm text-slate-500">Accès réservé aux administrateurs.</p>
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mt-4 text-primary text-sm hover:underline"
+          className="mt-4 text-sm font-medium text-[#0b1f4a] hover:underline"
         >
           Retour au tableau de bord
         </button>
@@ -118,7 +123,16 @@ export default function UtilisateursPage() {
         toast.error(data.error ?? "Erreur");
         return;
       }
-      setList((prev) => [...prev, { id: data.id, email: data.email, role: data.role, blocked: false, createdAt: new Date().toISOString() }]);
+      setList((prev) => [
+        ...prev,
+        {
+          id: data.id,
+          email: data.email,
+          role: data.role,
+          blocked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
       setEmail("");
       setPassword("");
       toast.success("Utilisateur créé");
@@ -213,7 +227,10 @@ export default function UtilisateursPage() {
     }
     if (!confirm(`Supprimer l'utilisateur ${u.email} ? Cette action est irréversible.`)) return;
     try {
-      const res = await fetch(`/api/users/${u.id}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`/api/users/${u.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) {
         const d = await res.json();
         toast.error(d.error ?? "Erreur");
@@ -227,36 +244,35 @@ export default function UtilisateursPage() {
   }
 
   return (
-    <div className="max-w-4xl w-full animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-[22px] font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-          <UsersIcon className="h-6 w-6 text-primary" />
-          Utilisateurs
-        </h1>
-        <p className="text-slate-500 mt-1 text-[14px]">
-          Ajouter des utilisateurs, gérer les rôles, bloquer ou modifier les mots de passe.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-5xl animate-fade-in">
+      <PageHero
+        title="Utilisateurs"
+        subtitle="Comptes, rôles, blocage et mots de passe."
+        icon={UsersIcon}
+        accent="from-amber-400/20 to-transparent"
+      />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 mb-6">
-        <h2 className="text-[13px] font-semibold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Plus className="h-4 w-4" />
+      <section className="mb-5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm shadow-slate-200/40 sm:p-6">
+        <h2 className="mb-4 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+            <Plus className="h-4 w-4" />
+          </span>
           Nouvel utilisateur
         </h2>
         <form onSubmit={addUser} className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[200px]">
-            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Email *</label>
+          <div className="min-w-[200px] flex-1">
+            <label className={labelClass}>Email *</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="utilisateur@exemple.cd"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className={fieldClass}
             />
           </div>
           <div className="min-w-[160px]">
-            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Mot de passe * (min. 6)</label>
+            <label className={labelClass}>Mot de passe * (min. 6)</label>
             <input
               type="password"
               value={password}
@@ -264,15 +280,15 @@ export default function UtilisateursPage() {
               required
               minLength={6}
               placeholder="••••••••"
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className={fieldClass}
             />
           </div>
-          <div className="min-w-[120px]">
-            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Rôle</label>
+          <div className="min-w-[130px]">
+            <label className={labelClass}>Rôle</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as "admin" | "juriste")}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[14px] text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className={fieldClass}
             >
               <option value="juriste">Juriste</option>
               <option value="admin">Admin</option>
@@ -281,7 +297,7 @@ export default function UtilisateursPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-[13px] font-semibold text-slate-900 transition hover:bg-amber-300 disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             Ajouter
@@ -289,67 +305,100 @@ export default function UtilisateursPage() {
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-        <div className="p-4 border-b border-slate-200">
-          <h2 className="text-[13px] font-semibold text-slate-900 uppercase tracking-wider">Liste des utilisateurs</h2>
+      <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-200/40">
+        <div className="border-b border-slate-100 px-5 py-3.5">
+          <h2 className="text-[15px] font-semibold text-slate-900">
+            Liste des utilisateurs
+            <span className="ml-2 text-[12px] font-normal text-slate-400">
+              ({list.length})
+            </span>
+          </h2>
         </div>
         {list.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-sm">Aucun utilisateur.</div>
+          <div className="px-6 py-12 text-center text-[14px] text-slate-500">
+            Aucun utilisateur.
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">Email</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">Rôle</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500">État</th>
-                  <th className="px-4 py-3 text-[12px] font-medium text-slate-500 text-right">Actions</th>
+                <tr className="border-b border-slate-100 bg-slate-50/80">
+                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Email
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Rôle
+                  </th>
+                  <th className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    État
+                  </th>
+                  <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {list.map((u) => (
-                  <tr key={u.id} className="border-b border-slate-200 hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-900 flex items-center gap-2">
-                      <UserCircle className="h-4 w-4 text-slate-400 shrink-0" />
-                      {u.email}
-                      {u.id === currentUser?.id && (
-                        <span className="text-[10px] text-slate-400">(vous)</span>
-                      )}
+                  <tr
+                    key={u.id}
+                    className="border-b border-slate-100 last:border-0 transition hover:bg-slate-50/80"
+                  >
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0b1f4a]/8 text-[#0b1f4a]">
+                          <UserCircle className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-[14px] font-medium text-slate-900">
+                            {u.email}
+                          </p>
+                          {u.id === currentUser?.id && (
+                            <p className="text-[11px] text-slate-400">Vous</p>
+                          )}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <select
                         value={u.role}
                         onChange={(e) => changeRole(u, e.target.value as "admin" | "juriste")}
                         disabled={u.id === currentUser?.id}
-                        className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-[12px] text-slate-900 focus:border-primary focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] text-slate-800 outline-none focus:border-[#123a7a]/40 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         <option value="juriste">Juriste</option>
                         <option value="admin">Admin</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       {u.blocked ? (
-                        <span className="text-red-400 text-[12px] font-medium">Bloqué</span>
+                        <span className="inline-flex rounded-full bg-red-50 px-2.5 py-0.5 text-[11px] font-medium text-red-600">
+                          Bloqué
+                        </span>
                       ) : (
-                        <span className="text-emerald-500/90 text-[12px]">Actif</span>
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                          Actif
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => toggleBlock(u)}
                           disabled={u.id === currentUser?.id}
                           title={u.blocked ? "Débloquer" : "Bloquer"}
-                          className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40 disabled:pointer-events-none"
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40"
                         >
                           {u.blocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                         </button>
                         <button
                           type="button"
-                          onClick={() => { setPasswordUserId(u.id); setNewPassword(""); }}
+                          onClick={() => {
+                            setPasswordUserId(u.id);
+                            setNewPassword("");
+                          }}
                           title="Modifier le mot de passe"
-                          className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                         >
                           <Key className="h-4 w-4" />
                         </button>
@@ -358,7 +407,7 @@ export default function UtilisateursPage() {
                           onClick={() => deleteUser(u)}
                           disabled={u.id === currentUser?.id}
                           title="Supprimer"
-                          className="p-2 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40 disabled:pointer-events-none"
+                          className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-40"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -374,11 +423,28 @@ export default function UtilisateursPage() {
 
       {passwordUserId && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} aria-hidden />
-          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-300 bg-white p-5 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[15px] font-semibold text-slate-900">Modifier le mot de passe</h3>
-              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="p-2 rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900">
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-[#0b1f4a]/45 backdrop-blur-[2px]"
+            aria-label="Fermer"
+            onClick={() => {
+              setPasswordUserId(null);
+              setNewPassword("");
+            }}
+          />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20 animate-slide-up">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-[15px] font-semibold text-slate-900">
+                Modifier le mot de passe
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordUserId(null);
+                  setNewPassword("");
+                }}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-700"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -386,15 +452,27 @@ export default function UtilisateursPage() {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Nouveau mot de passe (min. 6 caractères)"
+              placeholder="Nouveau mot de passe (min. 6)"
               minLength={6}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-[14px] text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary mb-4"
+              className={`${fieldClass} mb-4`}
             />
-            <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => { setPasswordUserId(null); setNewPassword(""); }} className="rounded-lg border border-slate-300 px-4 py-2 text-[13px] text-slate-500 hover:bg-slate-50">
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordUserId(null);
+                  setNewPassword("");
+                }}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50"
+              >
                 Annuler
               </button>
-              <button type="button" onClick={saveNewPassword} disabled={passwordSaving || newPassword.trim().length < 6} className="rounded-lg bg-primary px-4 py-2 text-[13px] font-medium text-white hover:bg-primary-dim disabled:opacity-50">
+              <button
+                type="button"
+                onClick={saveNewPassword}
+                disabled={passwordSaving || newPassword.trim().length < 6}
+                className="rounded-xl bg-[#0b1f4a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#123a7a] disabled:opacity-50"
+              >
                 {passwordSaving ? "Enregistrement…" : "Enregistrer"}
               </button>
             </div>

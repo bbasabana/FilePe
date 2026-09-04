@@ -77,6 +77,26 @@ body {
 [data-sonner-toast][data-type="error"] {
   border-left: 4px solid rgb(239, 68, 68);
 }
+/* Login page */
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes login-crest {
+  from { opacity: 0; transform: scale(0.88) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes login-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(12px, -18px) scale(1.06); }
+}
+.login-rise { animation: login-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.login-brand { animation: login-rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+.login-crest { animation: login-crest 0.85s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.login-form { animation: login-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both; }
+.login-orb { animation: login-orb 12s ease-in-out infinite; }
+.login-orb-delayed { animation: login-orb 14s ease-in-out infinite reverse; animation-delay: -3s; }
+
 [data-sonner-toast] {
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }

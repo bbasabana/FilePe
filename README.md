@@ -21,17 +21,15 @@ npm run dev
 
 ## Empreintes (Live20R)
 
-L’app web (Vercel) ne parle pas directement au USB. Sur chaque poste d’enrôlement :
+Sur chaque **PC Windows** d’enrôlement (pas sur Vercel) :
 
-1. Brancher le **ZKTeco Live20R**
-2. Lancer l’agent local : voir [`fingerprint-agent/README.md`](fingerprint-agent/README.md)
-3. Ouvrir la fiche prévenu/détenu → **Empreintes digitales** (5 doigts × 3 prises)
+1. Installer le **ZKFinger SDK** (driver)
+2. Lancer l’agent (`fingerprint-agent` → `Demarrer-Agent.bat` ou l’exe)
+3. Ouvrir https://file-pe.vercel.app/ dans Chrome sur **ce même PC**
 
-```bash
-cd fingerprint-agent && npm install && npm run start:mock   # test sans lecteur
-# ou FILEPE_FP_MODE=hardware npm start                     # Live20R réel (Windows)
-```
+Détails : [`fingerprint-agent/INSTALL-WINDOWS.md`](fingerprint-agent/INSTALL-WINDOWS.md)
 
+Le développement FilePe reste sur Mac → push → Vercel.
 ## Scripts
 
 - `npm run dev` — serveur de développement
