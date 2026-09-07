@@ -1,30 +1,23 @@
 # Agent local FilePe — ZKTeco Live20R
 
-Le site https://file-pe.vercel.app/ ne parle **pas** au USB.
-Sur le PC où le Live20R est branché, on lance cet **agent** (pont local).
+## Pour les postes (SIMPLE)
 
-## Pour l’opérateur Windows (objectif simple)
+Sur chaque PC Windows :
 
 1. Installer **ZKFinger SDK** (driver) — une fois  
-   https://www.zkteco.com/en/Biometrics_Module_SDK
-2. Télécharger le dossier Agent (Release / artifact CI)  
-3. Double-clic **`Demarrer-Agent.bat`**
-4. Chrome → https://file-pe.vercel.app/ → empreintes
+2. Dézipper **FilePe-Fingerprint-Agent-Windows.zip**  
+3. Double-clic **`Demarrer-Agent.bat`**  
+4. Chrome → https://file-pe.vercel.app/
 
-Voir [INSTALL-WINDOWS.md](./INSTALL-WINDOWS.md).
+Détails : [INSTALL-WINDOWS.md](./INSTALL-WINDOWS.md) · [LIRE-MOI.txt](./LIRE-MOI.txt)
 
-**Pas besoin** de développer sur Windows. Le Mac suffit pour le code FilePe.
+**Pas** de Git / Node / pip sur les postes opérateurs.
 
-## Dev / test sans exe
+## Dev (Mac / source)
 
-```bat
+```bash
 npm install
-set FILEPE_FP_MODE=hardware
-npm start
+FILEPE_FP_MODE=mock npm start
 ```
 
-Build exe (sur Windows ou via GitHub Actions) :
-
-```bat
-npm run build:exe
-```
+Build pack Windows : GitHub Actions → artifact `FilePe-Fingerprint-Agent-Windows`.

@@ -1,31 +1,39 @@
-# Installation poste Windows (opérateur)
+# Installation poste d’enrôlement (SIMPLE)
 
-Tu développes sur Mac. Sur le PC Windows d’enrôlement, **pas besoin** de Node, Git, ni de cloner le projet pour coder.
+Sur chaque PC Windows avec un Live20R, **seulement 2 choses** :
 
-## Ce que l’opérateur installe (objectif)
+## 1. Une fois — driver ZKTeco
 
-1. **ZKFinger SDK Windows** (driver Live20R) — une fois  
-   https://www.zkteco.com/en/Biometrics_Module_SDK
-2. **Dossier Agent FilePe** (zip / Release GitHub) — double-clic `Demarrer-Agent.bat`
-3. **Chrome** → https://file-pe.vercel.app/
+Installer **ZKFinger SDK for Windows** (fourni avec le lecteur / site ZKTeco).  
+Ça installe le driver USB du Live20R.
 
-Pas de développement sur ce PC.
+## 2. Une fois — pack Agent FilePe
 
-## En attendant le .exe tout-en-un
+1. Télécharger **FilePe-Fingerprint-Agent-Windows.zip**  
+   (GitHub → Releases, ou artifact Actions)
+2. Dézipper où vous voulez (ex. `C:\FilePe-Agent\`)
+3. Double-clic sur **`Demarrer-Agent.bat`**
+4. Chrome sur **ce même PC** → https://file-pe.vercel.app/
 
-Tant que la Release `FilePeFingerprintAgent.exe` n’est pas publiée, setup **minimal** développeur sur ce Windows :
+Pas de Git. Pas de Node. Pas de `pip`. Pas de clone.
 
-```bat
-git clone https://github.com/bbasabana/FilePe.git
-cd FilePe\fingerprint-agent
-npm install
-pip install pyzkfp pillow
-Demarrer-Agent.bat
-```
+## À chaque session
 
-Puis Chrome → https://file-pe.vercel.app/
+1. Brancher le Live20R  
+2. Double-clic `Demarrer-Agent.bat` (fenêtre ouverte)  
+3. Ouvrir FilePe en ligne  
 
-## Pourquoi pas seulement Vercel ?
+## Ce qu’il y a dans le ZIP
 
-Le site en ligne ne voit pas le câble USB.  
-L’agent (bat / exe) sur **ce** PC fait le pont : Live20R → navigateur → Vercel.
+| Fichier | Rôle |
+|---------|------|
+| `Demarrer-Agent.bat` | Lancement (double-clic) |
+| `FilePeFingerprintAgent.exe` | Pont navigateur ↔ lecteur |
+| `hardware.py` | Capture via SDK ZKTeco |
+| `python\` | Python embarqué + pyzkfp |
+
+## Dépannage
+
+- Bannière « hors ligne » dans FilePe → l’agent n’est pas lancé sur **ce** PC  
+- Lecteur non détecté → rebrancher USB, vérifier le SDK ZKFinger  
+- Autre PC / Mac → le lecteur doit être sur la machine où Chrome est ouvert  

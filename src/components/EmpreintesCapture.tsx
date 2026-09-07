@@ -1,7 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Fingerprint, Loader2, CheckCircle2, MousePointerClick } from "lucide-react";
+/* eslint-disable @next/next/no-img-element */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fingerprint,
+  Loader2,
+  CheckCircle2,
+  MousePointerClick,
+  Usb,
+} from "lucide-react";
 import {
   FINGER_IDS,
   FINGER_LABELS,
@@ -14,6 +21,7 @@ import {
   emptyEmpreintes,
   parseEmpreintes,
 } from "@/lib/empreintes";
+import { FingerprintAgentClient, type AgentStatus } from "@/lib/fingerprint-agent";
 
 interface EmpreintesCaptureProps {
   currentJson: string | null;
@@ -21,7 +29,6 @@ interface EmpreintesCaptureProps {
   saving?: boolean;
 }
 
-/** Empreinte factice légère pour la démo (pas d’image réelle). */
 function demoSample(fingerId: FingerId, hand: HandId, index: number) {
   const token = `demo:${hand}:${fingerId}:${index}:${Date.now()}`;
   return {
@@ -36,7 +43,14 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
   const [hand, setHand] = useState<HandId>(saved?.hand ?? "droite");
   const [data, setData] = useState<EmpreintesData>(() => saved ?? emptyEmpreintes("droite"));
   const [activeFinger, setActiveFinger] = useState<FingerId>("pouce");
+  const [agentOpen, setAgentOpen] = useState(false);
+  const [status, setStatus] = useState<AgentStatus | null>(null);
+  const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastPreview, setLastPreview] = useState<string | null>(null);
+  const clientRef = useRef<FingerprintAgentClient | null>(null);
+
+  const hardwareReady = Boolean(agentOpen && status?.connected);
 
   useEffect(() => {
     if (saved) {
@@ -45,10 +59,25 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
     }
   }, [saved]);
 
+  useEffect(() => {
+    const client = new FingerprintAgentClient();
+    clientRef.current = client;
+    const offOpen = client.onOpenChange(setAgentOpen);
+    const offStatus = client.onStatus(setStatus);
+    client.connect();
+    return () => {
+      offOpen();
+      offStatus();
+      client.disconnect();
+      clientRef.current = null;
+    };
+  }, []);
+
   const switchHand = useCallback((h: HandId) => {
     setHand(h);
     setData(emptyEmpreintes(h));
     setActiveFinger("pouce");
+    setLastPreview(null);
     setError(null);
   }, []);
 
@@ -56,27 +85,22 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
   const sampleCount = current.samples.length;
   const doneAll = allFingersComplete(data);
 
-  /** Clic = une prise (pointage démo), sans lecteur USB. */
-  function pointage(fingerId: FingerId = activeFinger) {
-    setError(null);
-    setActiveFinger(fingerId);
-
+  function applySample(
+    fingerId: FingerId,
+    sample: { imageBase64: string; templateBase64: string; capturedAt: string },
+    mode: "hardware" | "mock" | "demo",
+    device: string,
+    merged?: string | null
+  ) {
     setData((prev) => {
       const finger = prev.fingers.find((f) => f.fingerId === fingerId);
       if (!finger || finger.samples.length >= SAMPLES_PER_FINGER) return prev;
 
-      const nextIndex = finger.samples.length;
-      const samples = [...finger.samples, demoSample(fingerId, hand, nextIndex)];
+      const samples = [...finger.samples, sample];
       const completed = samples.length >= SAMPLES_PER_FINGER;
       const templateMergedBase64 = completed
-        ? samples.map((s) => s.templateBase64).join("|")
+        ? merged ?? samples.map((s) => s.templateBase64).join("|")
         : finger.templateMergedBase64 ?? null;
-
-      const fingers = prev.fingers.map((f) =>
-        f.fingerId === fingerId
-          ? { ...f, hand, samples, completed, templateMergedBase64 }
-          : f
-      );
 
       if (completed) {
         const idx = FINGER_IDS.indexOf(fingerId);
@@ -85,8 +109,92 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
         }
       }
 
-      return { ...prev, hand, mode: "demo", device: "Démo (clic)", fingers };
+      return {
+        ...prev,
+        hand,
+        mode,
+        device,
+        fingers: prev.fingers.map((f) =>
+          f.fingerId === fingerId
+            ? { ...f, hand, samples, completed, templateMergedBase64 }
+            : f
+        ),
+      };
     });
+  }
+
+  /** Capture réelle via agent local Live20R */
+  async function captureHardware(fingerId: FingerId = activeFinger) {
+    const client = clientRef.current;
+    if (!client || !hardwareReady) {
+      setError("Agent / lecteur hors ligne. Lancez Demarrer-Agent.bat sur ce PC.");
+      return;
+    }
+    setError(null);
+    setActiveFinger(fingerId);
+    setCapturing(true);
+    try {
+      const result = await client.capture();
+      const image = result.imageBase64.startsWith("data:")
+        ? result.imageBase64
+        : `data:image/png;base64,${result.imageBase64}`;
+      setLastPreview(image);
+
+      const prevFinger = data.fingers.find((f) => f.fingerId === fingerId)!;
+      if (prevFinger.samples.length >= SAMPLES_PER_FINGER) return;
+
+      const sample = {
+        imageBase64: image,
+        templateBase64: result.templateBase64,
+        capturedAt: new Date().toISOString(),
+      };
+
+      let merged: string | null = null;
+      const nextSamples = [...prevFinger.samples, sample];
+      if (nextSamples.length >= SAMPLES_PER_FINGER) {
+        try {
+          merged = await client.merge(nextSamples.map((s) => s.templateBase64));
+        } catch {
+          merged = sample.templateBase64;
+        }
+      }
+
+      applySample(
+        fingerId,
+        sample,
+        status?.mode === "mock" ? "mock" : "hardware",
+        status?.device || "Live20R",
+        merged
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erreur de capture");
+    } finally {
+      setCapturing(false);
+    }
+  }
+
+  /** Démo clic (sans lecteur) */
+  function pointageDemo(fingerId: FingerId = activeFinger) {
+    setError(null);
+    setActiveFinger(fingerId);
+    const finger = data.fingers.find((f) => f.fingerId === fingerId);
+    if (!finger || finger.samples.length >= SAMPLES_PER_FINGER) return;
+    applySample(
+      fingerId,
+      demoSample(fingerId, hand, finger.samples.length),
+      "demo",
+      "Démo (clic)"
+    );
+  }
+
+  function onFingerClick(fingerId: FingerId) {
+    const finger = data.fingers.find((f) => f.fingerId === fingerId);
+    if (finger?.completed) {
+      setActiveFinger(fingerId);
+      return;
+    }
+    if (hardwareReady) void captureHardware(fingerId);
+    else pointageDemo(fingerId);
   }
 
   function resetFinger(fingerId: FingerId) {
@@ -99,6 +207,7 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
       ),
     }));
     setActiveFinger(fingerId);
+    setLastPreview(null);
   }
 
   function fillAllDemo() {
@@ -131,15 +240,16 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
       setError("Terminez les 5 doigts (3 prises chacun) avant d’enregistrer.");
       return;
     }
-    const payload: EmpreintesData = {
-      ...data,
-      hand,
-      device: "Démo (clic)",
-      mode: "demo",
-      enrolledAt: new Date().toISOString(),
-      version: 2,
-    };
-    onSave(JSON.stringify(payload));
+    onSave(
+      JSON.stringify({
+        ...data,
+        hand,
+        device: data.device ?? (hardwareReady ? status?.device : "Démo (clic)"),
+        mode: data.mode ?? (hardwareReady ? "hardware" : "demo"),
+        enrolledAt: new Date().toISOString(),
+        version: 2,
+      } satisfies EmpreintesData)
+    );
   }
 
   return (
@@ -149,17 +259,39 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
         Empreintes digitales
       </h3>
       <p className="mb-3 text-[11px] text-slate-500">
-        Mode démo — cliquez sur chaque doigt (3 fois) pour enregistrer. Le lecteur Live20R
-        sera branché plus tard.
+        5 doigts × 3 prises — Live20R si l’agent tourne, sinon mode démo clic.
       </p>
 
-      <div className="mb-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] text-sky-900">
-        <MousePointerClick className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <div
+        className={`mb-4 flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] ${
+          hardwareReady
+            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border-amber-200 bg-amber-50 text-amber-950"
+        }`}
+      >
+        {hardwareReady ? (
+          <Usb className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        ) : (
+          <MousePointerClick className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        )}
         <div>
-          <p className="font-medium">Pointage par clic (démo)</p>
-          <p className="mt-0.5 opacity-80">
-            Cliquez un doigt ou le bouton « Pointer » — 3 prises par doigt, puis Enregistrer.
-          </p>
+          {hardwareReady ? (
+            <>
+              <p className="font-medium">
+                Lecteur OK — {status?.device || "Live20R"}
+                {status?.mode === "mock" ? " (simulation agent)" : ""}
+              </p>
+              <p className="mt-0.5 opacity-80">Posez le doigt, puis cliquez le doigt ou Capturer.</p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium">Mode démo (agent hors ligne)</p>
+              <p className="mt-0.5 opacity-80">
+                Sur Windows : double-clic <code className="rounded bg-white/70 px-1">Demarrer-Agent.bat</code>{" "}
+                puis rechargez cette page.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
@@ -170,21 +302,21 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
             type="button"
             onClick={() => switchHand(h)}
             className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition ${
-              hand === h
-                ? "bg-[#0b1f4a] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              hand === h ? "bg-[#0b1f4a] text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             Main {h}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={fillAllDemo}
-          className="ml-auto rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-[12px] font-medium text-amber-900 hover:bg-amber-100"
-        >
-          Remplir les 5 doigts (démo rapide)
-        </button>
+        {!hardwareReady && (
+          <button
+            type="button"
+            onClick={fillAllDemo}
+            className="ml-auto rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-[12px] font-medium text-amber-900 hover:bg-amber-100"
+          >
+            Remplir les 5 doigts (démo)
+          </button>
+        )}
       </div>
 
       <div className="mb-4 grid grid-cols-5 gap-2">
@@ -195,14 +327,9 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
             <button
               key={f.fingerId}
               type="button"
-              onClick={() => {
-                if (f.completed) {
-                  setActiveFinger(f.fingerId);
-                  return;
-                }
-                pointage(f.fingerId);
-              }}
-              className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 transition ${
+              disabled={capturing}
+              onClick={() => onFingerClick(f.fingerId)}
+              className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 transition disabled:opacity-60 ${
                 f.completed
                   ? "border-emerald-300 bg-emerald-50"
                   : active
@@ -231,7 +358,6 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
               <span className="tabular-nums text-[10px] text-slate-400">
                 {progress}/{SAMPLES_PER_FINGER}
               </span>
-              {/* Pastilles de prises */}
               <div className="flex gap-0.5">
                 {Array.from({ length: SAMPLES_PER_FINGER }).map((_, i) => (
                   <span
@@ -256,8 +382,10 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
           </p>
           <p className="text-[10px] text-slate-500">
             {current.completed
-              ? "Doigt terminé. Passez au suivant ou enregistrez."
-              : "Cliquez sur le doigt ou sur Pointer pour valider une prise."}
+              ? "Doigt terminé."
+              : hardwareReady
+                ? "Posez le doigt sur le Live20R, puis Capturer."
+                : "Cliquez pour pointer (démo)."}
           </p>
         </div>
         <div className="flex gap-2">
@@ -272,15 +400,27 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
           )}
           <button
             type="button"
-            onClick={() => pointage(activeFinger)}
-            disabled={current.completed}
+            onClick={() =>
+              hardwareReady ? void captureHardware(activeFinger) : pointageDemo(activeFinger)
+            }
+            disabled={capturing || current.completed}
             className="inline-flex items-center gap-2 rounded-lg bg-[#0b1f4a] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#123a7a] disabled:opacity-40"
           >
-            <Fingerprint className="h-3.5 w-3.5" />
-            Pointer
+            {capturing ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Fingerprint className="h-3.5 w-3.5" />
+            )}
+            {hardwareReady ? "Capturer" : "Pointer"}
           </button>
         </div>
       </div>
+
+      {lastPreview && (
+        <div className="mb-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2">
+          <img src={lastPreview} alt="Dernière empreinte" className="mx-auto h-28 w-auto object-contain" />
+        </div>
+      )}
 
       {error && <p className="mb-3 text-[11px] text-red-600">{error}</p>}
 
@@ -301,7 +441,7 @@ export default function EmpreintesCapture({ currentJson, onSave, saving }: Empre
         <p className="mt-2 text-[10px] text-slate-500">
           Empreintes enregistrées
           {saved.enrolledAt ? ` le ${new Date(saved.enrolledAt).toLocaleString("fr-FR")}` : ""}
-          {saved.mode === "demo" ? " (mode démo)" : ""}.
+          {saved.mode ? ` (${saved.mode})` : ""}.
         </p>
       )}
     </div>

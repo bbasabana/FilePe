@@ -19,14 +19,15 @@ SEED_EMAIL=admin@makala.cd SEED_PASSWORD=admin123 SEED_ROLE=admin npm run seed
 npm run dev
 ```
 
-## Empreintes (Live20R)
+## Empreintes (Live20R) — postes Windows
 
-Sur chaque **PC Windows** d’enrôlement (pas sur Vercel) :
+Sur chaque PC d’enrôlement (**2 étapes seulement**) :
 
-1. Installer le **ZKFinger SDK** (driver)
-2. Lancer l’agent (`fingerprint-agent` → `Demarrer-Agent.bat` ou l’exe)
-3. Ouvrir https://file-pe.vercel.app/ dans Chrome sur **ce même PC**
+1. Installer le **ZKFinger SDK** (driver Live20R)  
+2. Dézipper le pack **FilePe-Fingerprint-Agent-Windows** → double-clic `Demarrer-Agent.bat`  
+3. Chrome sur **ce PC** → https://file-pe.vercel.app/
 
+Pas de Git, Node ni Python à installer pour les opérateurs.  
 Détails : [`fingerprint-agent/INSTALL-WINDOWS.md`](fingerprint-agent/INSTALL-WINDOWS.md)
 
 Le développement FilePe reste sur Mac → push → Vercel.

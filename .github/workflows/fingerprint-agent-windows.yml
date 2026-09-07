@@ -5,7 +5,10 @@ on:
   push:
     paths:
       - "fingerprint-agent/**"
+      - ".github/workflows/fingerprint-agent-windows.yml"
     branches: [main]
+  release:
+    types: [published]
 
 jobs:
   build-windows-agent:
@@ -15,21 +18,58 @@ jobs:
         working-directory: fingerprint-agent
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
-      - run: npm install
-      - run: npx pkg server.cjs --targets node18-win-x64 --output dist/FilePeFingerprintAgent.exe
-      - name: Pack release folder
+
+      - name: Install npm deps and build exe
+        run: |
+          npm install
+          npx pkg server.cjs --targets node18-win-x64 --output dist/FilePeFingerprintAgent.exe
+
+      - name: Bundle embeddable Python + pyzkfp
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release | Out-Null
+          $ErrorActionPreference = "Stop"
+          $pyVer = "3.11.9"
+          $zip = "python-embed.zip"
+          $url = "https://www.python.org/ftp/python/$pyVer/python-$pyVer-embed-amd64.zip"
+          Invoke-WebRequest -Uri $url -OutFile $zip
+          New-Item -ItemType Directory -Force -Path release/python | Out-Null
+          Expand-Archive -Path $zip -DestinationPath release/python -Force
+
+          # Activer import site pour pip
+          $pth = Get-ChildItem release/python/*.pth | Select-Object -First 1
+          $content = Get-Content $pth.FullName
+          $content = $content | ForEach-Object {
+            if ($_ -match '^#\s*import site') { 'import site' } else { $_ }
+          }
+          if ($content -notcontains 'import site') { $content += 'import site' }
+          Set-Content -Path $pth.FullName -Value $content
+
+          Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile release/python/get-pip.py
+          & release/python/python.exe release/python/get-pip.py --no-warn-script-location
+          & release/python/python.exe -m pip install --no-warn-script-location pyzkfp pillow
+
           Copy-Item dist/FilePeFingerprintAgent.exe release/
           Copy-Item hardware.py release/
           Copy-Item Demarrer-Agent.bat release/
           Copy-Item INSTALL-WINDOWS.md release/
+          Copy-Item LIRE-MOI.txt release/
           Copy-Item README.md release/
+
+          Compress-Archive -Path release/* -DestinationPath FilePe-Fingerprint-Agent-Windows.zip -Force
+
       - uses: actions/upload-artifact@v4
         with:
           name: FilePe-Fingerprint-Agent-Windows
-          path: fingerprint-agent/release/*
+          path: |
+            fingerprint-agent/FilePe-Fingerprint-Agent-Windows.zip
+            fingerprint-agent/release/**
+
+      - name: Attach zip to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: fingerprint-agent/FilePe-Fingerprint-Agent-Windows.zip

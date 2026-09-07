@@ -1,0 +1,16 @@
+FilePe — Agent empreintes (Windows)
+===================================
+
+INSTALLATION (2 etapes, une seule fois par PC)
+----------------------------------------------
+1. Installer ZKFinger SDK Windows (driver Live20R)
+2. Dezipper ce dossier, puis double-clic : Demarrer-Agent.bat
+
+UTILISATION
+-----------
+1. Brancher le Live20R
+2. Double-clic Demarrer-Agent.bat (garder la fenetre ouverte)
+3. Chrome sur CE PC : https://file-pe.vercel.app/
+4. Fiche prevenu/detenu -> Empreintes -> Capturer
+
+Pas besoin de Git, Node, Python ni npm.
